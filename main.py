@@ -127,6 +127,9 @@ TAG_RULES = {
     ],
     "land": [
         "land"
+    ],
+    "lander": [
+        "lander"  # nueva tag para la habilidad lander
     ]
 }
 
