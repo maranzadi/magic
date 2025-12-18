@@ -366,6 +366,8 @@ def main():
 
         tag_card(card)
         cards.append(card)
+        print(f"\rCargando {i}/{total} - {card.name} - {card.score} ({', '.join(card.colors) or 'Incoloro'})", end="")
+
 
     commander = choose_commander(cards)
     deck, archetype = build_deck(cards, commander)
