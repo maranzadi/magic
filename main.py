@@ -138,9 +138,13 @@ TAG_RULES = {
     "lander": [
         "lander"  # nueva tag para la habilidad lander
     ],
-    "artifacts":[
+    "artifact":[
         "artifacts",
         "artifatc"
+    ],
+    "ally":[
+        "ally",
+        "Ally"
     ]
 }
 
@@ -151,6 +155,20 @@ def tag_card(card):
             if k in text:
                 card.tags.add(tag)
                 break
+    
+     # ───── Tags por TYPE_LINE ─────
+    if "Artifact" in card.type_line:
+        card.tags.add("artifact")
+
+    if "Land" in card.type_line:
+        card.tags.add("land")
+
+    if "Artifact Land" in card.type_line:
+        card.tags.add("artifact")
+        card.tags.add("land")
+    
+    if "Ally" in card.type_line:
+        card.tags.add("ally")
 
 # ─────────────────────────────────────────────
 # COMANDANTE
@@ -217,9 +235,13 @@ COMMANDER_EFFECTS = {
     "land": [
         "land"
     ],
-    "artifacts":[
-        "artifacts"
+    "artifact_matters": [
+        "artifact"
+    ],
+    "ally": [
+        "ally"
     ]
+
 }
 
 def detect_commander_effects(commander):
@@ -302,7 +324,7 @@ DYNAMIC_COMBOS = {
     "proliferate_synergy": ["proliferate", "+1/+1"],
     "ramp_synergy": ["ramp", "cost_reduction_target"],
     "sacrifice_synergy": ["sacrifice", "etb"],
-    "lands_artifatcs_land_sinergy":["lands, artifacts, ramp"]
+    "lands_artifacts_ramp_synergy": ["land", "artifact", "ramp"]
 }
 
 
@@ -325,7 +347,7 @@ def detect_dynamic_combos(deck, commander_effects):
                     combos.append({
                         "cards": [card1.name],
                         "type": f"{combo_name}_commander",
-                        "bonus_score": 6
+                        "bonus_score": 14
                     })
     return combos
 
