@@ -112,21 +112,20 @@ def tag_card(card):
 # COMANDANTE
 # ─────────────────────────────────────────────
 
-def commander_score(card):
-    score = 0
-    if card.is_legendary and "Creature" in card.type_line:
-        score += 5
-    score += len(card.tags) * 2
-    return score
-
-def choose_commander(cards):
-    candidates = [
-        c for c in cards
-        if c.is_legendary and "Creature" in c.type_line
-    ]
+def choose_commander_manual(cards):
+    candidates = [c for c in cards if c.is_legendary and "Creature" in c.type_line]
     if not candidates:
         raise RuntimeError("No hay comandante legal en la colección.")
-    return max(candidates, key=commander_score)
+
+    print("Elige tu comandante:")
+    for i, c in enumerate(candidates, start=1):
+        print(f"{i}. {c.name} ({', '.join(c.colors) or 'Incoloro'})")
+
+    while True:
+        choice = input(f"Ingrese el número (1-{len(candidates)}): ").strip()
+        if choice.isdigit() and 1 <= int(choice) <= len(candidates):
+            return candidates[int(choice)-1]
+        print("Opción inválida, intenta de nuevo.")
 
 # ─────────────────────────────────────────────
 # EFECTOS ESPECIALES DEL COMANDANTE
@@ -175,7 +174,6 @@ COMMANDER_EFFECTS = {
         "land"
     ],
 }
-
 
 def detect_commander_effects(commander):
     effects = set()
@@ -231,11 +229,9 @@ def score_card(card, archetype, commander, effects):
 
     for effect, keywords in COMMANDER_EFFECTS.items():
         if effect in effects:
-            # revisa tags primero
             if any(k.lower() in card.tags for k in keywords):
                 score += BONUS_EFFECT_SCORE
-                continue  # ya sumó, no hace falta revisar texto
-            # revisa texto de la carta
+                continue
             text_lower = card.text.lower()
             if any(k.lower() in text_lower for k in keywords):
                 score += BONUS_EFFECT_SCORE
@@ -244,34 +240,27 @@ def score_card(card, archetype, commander, effects):
     if card.cmc <= 3:
         score += 1
 
-    
-
     card.score = score
-
 
 # ─────────────────────────────────────────────
 # CONSTRUCCIÓN DEL MAZO
 # ─────────────────────────────────────────────
 
 def build_deck(cards, commander):
-    # Solo cartas legales
+    # Solo cartas legales (incluye otras criaturas legendarias)
     legal_cards = [
         c for c in cards
-        if c.id != commander.id
-        and set(c.colors).issubset(set(commander.colors))
+        if set(c.colors).issubset(set(commander.colors))
     ]
 
-    # Detecta arquetipo y efectos del comandante
     archetype = detect_archetype(legal_cards)
     effects = detect_commander_effects(commander)
 
-    # Calcula score de todas las cartas
     for c in legal_cards:
         score_card(c, archetype, commander, effects)
 
     deck = []
 
-    # Prioriza cartas por roles, pero ordenadas por score (sinergia incluida)
     role_targets = {
         "ramp": 10,
         "draw": 8,
@@ -282,17 +271,16 @@ def build_deck(cards, commander):
         pool = sorted(
             [c for c in legal_cards if role in c.tags],
             key=lambda c: c.score,
-            reverse=True  # Orden descendente por score (sinergia primero)
+            reverse=True
         )
         for c in pool:
             if c not in deck and len(deck) < target:
                 deck.append(c)
 
-    # Agrega el resto de cartas hasta 63 (excluyendo tierras y comandante)
     remaining = sorted(
         [c for c in legal_cards if c not in deck],
         key=lambda c: c.score,
-        reverse=True  # cartas con más sinergia primero
+        reverse=True
     )
 
     for c in remaining:
@@ -300,7 +288,6 @@ def build_deck(cards, commander):
             deck.append(c)
 
     return deck, archetype
-
 
 # ─────────────────────────────────────────────
 # TIERRAS
@@ -357,23 +344,21 @@ def main():
 
     cards = []
     total = len(ids)
-    i=0
+    i = 0
     for cid in ids:
         i += 1
         data = fetch_card(cid)
         card = Card(data)
-        print(f"\rCargando {i}/{total} - {card.name} ({', '.join(card.colors) or 'Incoloro'})", end="")
-
         tag_card(card)
         cards.append(card)
         print(f"\rCargando {i}/{total} - {card.name} - {card.score} ({', '.join(card.colors) or 'Incoloro'})", end="")
 
 
-    commander = choose_commander(cards)
+    commander = choose_commander_manual(cards)
     deck, archetype = build_deck(cards, commander)
     lands = generate_lands(deck, commander)
 
-    print("══════════════════════════════════════")
+    print("\n══════════════════════════════════════")
     print(f"COMANDANTE: {commander.name}")
     print(f"COLORES: {', '.join(commander.colors) or 'Incoloro'}")
     print(f"ARQUETIPO: {', '.join(archetype)}")
