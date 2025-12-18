@@ -517,24 +517,50 @@ def main():
     ruta = "./webPage/src/decks/"
     os.makedirs(ruta, exist_ok=True)
 
-    file_path = os.path.join(ruta, f"{commander.name}.txt")
+    file_path = os.path.join(ruta, f"{commander.name}.json")
 
     deck_ids = {c.id for c in deck}
 
-    with open(file_path, 'w', encoding='utf-8') as txtfile:
-        #txtfile.write(f"{commander.id};{commander.score}\n")
-        for c in deck:
-            txtfile.write(f"{c.id};{c.score};True\n")
-        for land in lands:
-            txtfile.write(f"{land}\n")
-        txtfile.write("\n# --------\n")
-        for c in cards:
-            if c.id not in deck_ids:
-                txtfile.write(f"{c.id};{c.name};{c.score};False\n")
+    output = {
+        "commander": {
+            "id": commander.id,
+            "name": commander.name,
+            "colors": commander.colors,
+            "score": commander.score,
+            "score_breakdown": getattr(commander, "score_breakdown", {})
+        },
+        "deck": [],
+        "lands": lands,
+        "other_cards": []
+    }
 
+    # Guardar cartas del deck
+    for c in deck:
+        output["deck"].append({
+            "id": c.id,
+            "name": c.name,
+            "score": c.score,
+            "score_breakdown": getattr(c, "score_breakdown", {}),
+            "included": True
+        })
 
-                
+    # Guardar las demás cartas
+    for c in cards:
+        if c.id not in deck_ids:
+            output["other_cards"].append({
+                "id": c.id,
+                "name": c.name,
+                "score": c.score,
+                "score_breakdown": getattr(c, "score_breakdown", {}),
+                "included": False
+            })
+
+    # Guardar todo en JSON
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(output, f, ensure_ascii=False, indent=4)
+
                     
+                        
 
 if __name__ == "__main__":
     main()
