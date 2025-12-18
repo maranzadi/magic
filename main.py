@@ -366,8 +366,8 @@ def generate_lands(deck, commander):
 # ─────────────────────────────────────────────
 
 def main():
-    with open("scryfall_ids.txt") as f:
-        ids = [l.strip() for l in f if l.strip()]
+    ids = list(CARD_DB.keys())
+
 
     print(f"Cargando {len(ids)} cartas...\n")
 
@@ -405,13 +405,13 @@ def main():
     print("\n✔ Mazo Commander (100 cartas) generado.")
 
 
-    with open('{commander.name}.txt', 'w', encoding='utf-8') as txtfile:
-            txtfile.write({commander.id} + '\n')
-            for c in deck:
-                txtfile.write({c.id} + '\n')
+    with open(f'{commander.name}.txt', 'w', encoding='utf-8') as txtfile:
+        txtfile.write(f"{commander.id}\n")
+        for c in deck:
+            txtfile.write(f"{c.id}\n")
+        for land in lands:
+            txtfile.write(f"{land}\n")
 
-            for land in lands:
-                txtfile.write({land} + '\n')
 
                 
                     
