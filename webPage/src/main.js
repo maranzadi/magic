@@ -33,7 +33,14 @@ function loadJson(){
 
 function imprimir(){
     //console.log(jsonTotal)
-    for (let i = 0; i < lista.length; i++) {
-        //console.log(lista[i])
+    for (const id in jsonTotal) {
+        if (jsonTotal.hasOwnProperty(id)) {
+            if(lista.includes(id)){
+                const carta = jsonTotal[id];
+                console.log("ID:", id);
+                console.log("------");
+            }
+            
+        }
     }
 }
