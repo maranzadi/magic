@@ -23,6 +23,8 @@ class Card:
         main_types = self.type_line.split("—")[0]  # antes del —
         self.types = set(main_types.strip().split())
 
+        self.image_url = self._get_image_url(data)
+
 # ─────────────────────────────────────────────
 # SCRYFALL
 # ─────────────────────────────────────────────
@@ -33,6 +35,19 @@ def fetch_card(card_id):
     time.sleep(REQUEST_DELAY)
     return r.json()
 
+
+def _get_image_url(self, data):
+    # Carta normal
+    if "image_uris" in data:
+        return data["image_uris"].get("normal")
+
+    # Carta de doble cara
+    if "card_faces" in data and data["card_faces"]:
+        face = data["card_faces"][0]
+        if "image_uris" in face:
+            return face["image_uris"].get("normal")
+
+    return None
 # ─────────────────────────────────────────────
 # TAGGING
 # ─────────────────────────────────────────────
