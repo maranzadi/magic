@@ -522,12 +522,18 @@ def main():
 
     file_path = os.path.join(ruta, f"{commander.name}.txt")
 
+    deck_ids = {c.id for c in deck}
+
     with open(file_path, 'w', encoding='utf-8') as txtfile:
         #txtfile.write(f"{commander.id};{commander.score}\n")
         for c in deck:
-            txtfile.write(f"{c.id};{c.score}\n")
+            txtfile.write(f"{c.id};{c.score};True\n")
         for land in lands:
             txtfile.write(f"{land}\n")
+        txtfile.write("\n# --------\n")
+        for c in cards:
+            if c.id not in deck_ids:
+                txtfile.write(f"{c.id};{c.name};{c.score};False\n")
 
 
                 
