@@ -248,20 +248,24 @@ def score_card(card, archetype, commander, effects):
 # ─────────────────────────────────────────────
 
 def build_deck(cards, commander):
+    # Solo cartas legales
     legal_cards = [
         c for c in cards
         if c.id != commander.id
         and set(c.colors).issubset(set(commander.colors))
     ]
 
+    # Detecta arquetipo y efectos del comandante
     archetype = detect_archetype(legal_cards)
     effects = detect_commander_effects(commander)
 
+    # Calcula score de todas las cartas
     for c in legal_cards:
         score_card(c, archetype, commander, effects)
 
     deck = []
 
+    # Prioriza cartas por roles, pero ordenadas por score (sinergia incluida)
     role_targets = {
         "ramp": 10,
         "draw": 8,
@@ -272,16 +276,17 @@ def build_deck(cards, commander):
         pool = sorted(
             [c for c in legal_cards if role in c.tags],
             key=lambda c: c.score,
-            reverse=True
+            reverse=True  # Orden descendente por score (sinergia primero)
         )
         for c in pool:
             if c not in deck and len(deck) < target:
                 deck.append(c)
 
+    # Agrega el resto de cartas hasta 63 (excluyendo tierras y comandante)
     remaining = sorted(
         [c for c in legal_cards if c not in deck],
         key=lambda c: c.score,
-        reverse=True
+        reverse=True  # cartas con más sinergia primero
     )
 
     for c in remaining:
@@ -289,6 +294,7 @@ def build_deck(cards, commander):
             deck.append(c)
 
     return deck, archetype
+
 
 # ─────────────────────────────────────────────
 # TIERRAS
