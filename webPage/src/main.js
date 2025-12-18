@@ -7,7 +7,8 @@ fetch("./decks/Toph, the First Metalbender.txt")
     const lineas = text.split("\n").filter(l => l.trim() !== ""); 
     // Agregar cada línea al array
     lista.push(...lineas); 
-    //console.log(lista); // ✔ Cada línea es un índice
+    //console.log(lista);
+    imprimir()
 })
 .catch(e => console.error(e));
 
@@ -15,7 +16,8 @@ fetch("./decks/Toph, the First Metalbender.txt")
 
 
 
-
-for (let i = 0; i < lista.length; i++) {
-  console.log(lista[i])
+function imprimir(){
+    for (let i = 0; i < lista.length; i++) {
+        console.log(lista[i])
+    }
 }
