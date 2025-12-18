@@ -395,5 +395,17 @@ def main():
 
     print("\n✔ Mazo Commander (100 cartas) generado.")
 
+
+    with open('{commander.name}.txt', 'w', encoding='utf-8') as txtfile:
+            txtfile.write({commander.id} + '\n')
+            for c in deck:
+                txtfile.write({c.id} + '\n')
+
+            for land in lands:
+                txtfile.write({land} + '\n')
+
+                
+                    
+
 if __name__ == "__main__":
     main()
