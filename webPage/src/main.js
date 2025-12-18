@@ -33,30 +33,39 @@ function loadJson(){
 
 function imprimir(){
     //console.log(jsonTotal)
+    let listaNotarekin =[]
+    for (const z of lista) {
+        let listBerria = z.split(";");
+        listaNotarekin.push(listBerria);
+        console.log(listBerria);
+    }
+
+    console.log(listaNotarekin);
+
     for (const id in jsonTotal) {
         if (jsonTotal.hasOwnProperty(id)) {
-            if(lista.includes(id)){
-                const carta = jsonTotal[id];
-                console.log("ID:", id);
-                console.log("------");
-                
-                var node = document.getElementById('conjunto');
+            for(let i =0;i<listaNotarekin.length;i++){
+                if(listaNotarekin[i][0] == id){
+                    const carta = jsonTotal[id];
+                    console.log("ID:", id);
+                    console.log("------");
+                    
+                    var node = document.getElementById('conjunto');
 
-                if(id == lista[0]){
-                    node = document.getElementById('commander');
-                }
+                    if(id == listaNotarekin[0][0]){
+                        node = document.getElementById('commander');
+                    }
 
-                node.innerHTML += `
-                    <div class='bg-gray-600 p-5 rounded-md'>
-                        <img src='${carta.image_url}' 
-                            class='h-90 w-auto rounded-lg hover:scale-110 transition delay-150 duration-300 ease-in-out'>
-                        <h1 class='mt-1.5 text-center text-amber-50'>${carta.name}</h1>
-                    </div>
-                    `;
-
-                
+                    node.innerHTML += `
+                        <div class='bg-gray-600 p-5 rounded-md'>
+                            <img src='${carta.image_url}' 
+                                class='h-90 w-auto rounded-lg hover:scale-110 transition delay-150 duration-300 ease-in-out'>
+                            <h1 class='mt-1.5 text-center text-amber-50'>${carta.name} - ${listaNotarekin[i][1]}</h1>
+                        </div>
+                        `;
+                    }
             }
-            
+                        
         }
     }
 }
