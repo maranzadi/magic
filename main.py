@@ -479,7 +479,7 @@ def main():
     file_path = os.path.join(ruta, f"{commander.name}.txt")
 
     with open(file_path, 'w', encoding='utf-8') as txtfile:
-        txtfile.write(f"{commander.id};{commander.score}\n")
+        #txtfile.write(f"{commander.id};{commander.score}\n")
         for c in deck:
             txtfile.write(f"{c.id};{c.score}\n")
         for land in lands:
