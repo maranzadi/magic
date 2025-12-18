@@ -1,5 +1,5 @@
 const lista = [];
-const jsonTotal = "";
+let jsonTotal = "";
 
 fetch("./decks/Toph, the First Metalbender.txt")
   .then(res => res.text())
@@ -24,6 +24,7 @@ function loadJson(){
     .then(data => {
         //console.log(data);
         jsonTotal = data;
+        imprimir()
     })
     .catch(e => console.error(e));
 
@@ -31,6 +32,7 @@ function loadJson(){
 
 
 function imprimir(){
+    //console.log(jsonTotal)
     for (let i = 0; i < lista.length; i++) {
         //console.log(lista[i])
     }
