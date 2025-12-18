@@ -133,7 +133,14 @@ TAG_RULES = {
         "airbend"
     ],
     "land": [
-        "land"
+        "land",
+        "landfall",
+        "Landfall"
+    ],
+    "landfall": [
+        "land",
+        "landfall",
+        "Landfall"
     ],
     "lander": [
         "lander"  # nueva tag para la habilidad lander
@@ -324,7 +331,7 @@ DYNAMIC_COMBOS = {
     "proliferate_synergy": ["proliferate", "+1/+1"],
     "ramp_synergy": ["ramp", "cost_reduction_target"],
     "sacrifice_synergy": ["sacrifice", "etb"],
-    "lands_artifacts_ramp_synergy": ["land", "artifact", "ramp"]
+    "lands_artifacts_ramp_synergy": ["land", "artifact", "ramp", "landfall"]
 }
 
 
