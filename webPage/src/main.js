@@ -1,4 +1,5 @@
 const lista = [];
+const jsonTotal = "";
 
 fetch("./decks/Toph, the First Metalbender.txt")
   .then(res => res.text())
@@ -8,16 +9,29 @@ fetch("./decks/Toph, the First Metalbender.txt")
     // Agregar cada línea al array
     lista.push(...lineas); 
     //console.log(lista);
-    imprimir()
+    loadJson()
+    
 })
 .catch(e => console.error(e));
 
 //console.log(lista)
 
+function loadJson(){
+    imprimir()
+    
+    fetch("./cards.json")
+    .then(res => res.json())
+    .then(data => {
+        //console.log(data);
+        jsonTotal = data;
+    })
+    .catch(e => console.error(e));
+
+}
 
 
 function imprimir(){
     for (let i = 0; i < lista.length; i++) {
-        console.log(lista[i])
+        //console.log(lista[i])
     }
 }
