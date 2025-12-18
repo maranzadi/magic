@@ -228,7 +228,7 @@ def detect_archetype(cards):
 # SCORING
 # ─────────────────────────────────────────────
 
-def score_card(card, archetype, commander, effects):
+def score_card(card, archetype, commander, effects, deck=None):
     score = 0
 
     # legalidad de color
@@ -270,56 +270,119 @@ def score_card(card, archetype, commander, effects):
     if card.cmc <= 3:
         score += 1
 
+
+    if deck:
+        dynamic_combos = detect_dynamic_combos(deck, effects)
+        for combo in dynamic_combos:
+            if card.name in combo["cards"]:
+                score += combo["bonus_score"]
+
     card.score = score
+
+
+DYNAMIC_COMBOS = {
+    "etb_synergy": ["etb", "double_etb"],
+    "proliferate_synergy": ["proliferate", "+1/+1"],
+    "ramp_synergy": ["ramp", "cost_reduction_target"],
+    "sacrifice_synergy": ["sacrifice", "etb"]
+}
+
+
+def detect_dynamic_combos(deck, commander_effects):
+    combos = []
+    # Revisamos pares de cartas en el deck
+    for i, card1 in enumerate(deck):
+        for card2 in deck[i+1:]:
+            for combo_name, tags in DYNAMIC_COMBOS.items():
+                # Si alguna carta tiene un tag y la otra tiene el efecto correspondiente
+                if (card1.tags & set(tags)) and (card2.tags & set(tags)):
+                    # Registrar el combo
+                    combos.append({
+                        "cards": [card1.name, card2.name],
+                        "type": combo_name,
+                        "bonus_score": 5
+                    })
+                # También combinaciones con efectos del comandante
+                if (card1.tags & set(tags)) and (set(tags) & commander_effects):
+                    combos.append({
+                        "cards": [card1.name],
+                        "type": f"{combo_name}_commander",
+                        "bonus_score": 6
+                    })
+    return combos
 
 # ─────────────────────────────────────────────
 # CONSTRUCCIÓN DEL MAZO
 # ─────────────────────────────────────────────
 
 def build_deck(cards, commander):
-    # Solo cartas legales (incluye otras criaturas legendarias)
-    legal_cards = [
-        c for c in cards
-        if set(c.colors).issubset(set(commander.colors))
-    ]
-
+    legal_cards = [c for c in cards if set(c.colors).issubset(set(commander.colors))]
     archetype = detect_archetype(legal_cards)
     effects = detect_commander_effects(commander)
 
+    # Calcular score inicial sin combos
     for c in legal_cards:
         score_card(c, archetype, commander, effects)
-        #print(c.name)
-        #print(c.score)
 
     deck = []
 
-    role_targets = {
-        "ramp": 10,
-        "draw": 8,
-        "removal": 8,
-    }
-
+    # Rellenar roles básicos
+    role_targets = {"ramp": 10, "draw": 8, "removal": 8}
     for role, target in role_targets.items():
-        pool = sorted(
-            [c for c in legal_cards if role in c.tags],
-            key=lambda c: c.score,
-            reverse=True
-        )
+        pool = sorted([c for c in legal_cards if role in c.tags], key=lambda c: c.score, reverse=True)
         for c in pool:
             if c not in deck and len(deck) < target:
                 deck.append(c)
 
-    remaining = sorted(
-        [c for c in legal_cards if c not in deck],
-        key=lambda c: c.score,
-        reverse=True
-    )
-
+    # Agregar cartas restantes por score
+    remaining = sorted([c for c in legal_cards if c not in deck], key=lambda c: c.score, reverse=True)
     for c in remaining:
         if len(deck) < 63:
             deck.append(c)
 
+    # ───────── Optimización iterativa para combos ─────────
+    deck = optimize_deck(deck, legal_cards, archetype, commander, effects, max_size=63)
+
     return deck, archetype
+
+
+
+def optimize_deck(deck, legal_cards, archetype, commander, effects, max_size=63):
+    """
+    Optimiza un deck reemplazando cartas de menor score por otras mejores.
+    """
+    # Recalcular scores con combos dinámicos
+    for c in legal_cards:
+        score_card(c, archetype, commander, effects, deck=deck)
+
+    # Ordenar todas las cartas legales por score descendente
+    legal_sorted = sorted(legal_cards, key=lambda c: c.score, reverse=True)
+
+    # Inicializar el deck final
+    final_deck = list(deck)
+
+    # Iterar mientras haya cartas fuera del deck que sean mejores que las peores dentro
+    improved = True
+    while improved:
+        improved = False
+        # Carta con menor score dentro del deck
+        worst_in_deck = min(final_deck, key=lambda c: c.score)
+        # Carta con mayor score fuera del deck
+        for candidate in legal_sorted:
+            if candidate not in final_deck and candidate.score > worst_in_deck.score:
+                # Reemplazar
+                final_deck.remove(worst_in_deck)
+                final_deck.append(candidate)
+                improved = True
+                break  # recalcular después de un cambio
+
+        if improved:
+            # Recalcular scores porque los combos pueden cambiar
+            for c in legal_cards:
+                score_card(c, archetype, commander, effects, deck=final_deck)
+
+    # Asegurar tamaño máximo
+    return final_deck[:max_size]
 
 # ─────────────────────────────────────────────
 # TIERRAS
