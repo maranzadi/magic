@@ -1,4 +1,5 @@
 import json
+import os
 
 
 with open("cards.json", "r", encoding="utf-8") as f:
@@ -287,6 +288,8 @@ def build_deck(cards, commander):
 
     for c in legal_cards:
         score_card(c, archetype, commander, effects)
+        #print(c.name)
+        #print(c.score)
 
     deck = []
 
@@ -397,15 +400,19 @@ def main():
     print(f"1 {commander.name}\n")
 
     for c in deck:
-        print(f"1 {c.name} - {', '.join(sorted(c.types))}")
+        print(f"1 {c.name} - {', '.join(sorted(c.types))} - {c.score}")
 
     for land in lands:
         print(f"1 {land}")
 
     print("\n✔ Mazo Commander (100 cartas) generado.")
 
+    ruta = "./webPage/src/decks/"
+    os.makedirs(ruta, exist_ok=True)
 
-    with open(f'{commander.name}.txt', 'w', encoding='utf-8') as txtfile:
+    file_path = os.path.join(ruta, f"{commander.name}.txt")
+
+    with open(file_path, 'w', encoding='utf-8') as txtfile:
         txtfile.write(f"{commander.id}\n")
         for c in deck:
             txtfile.write(f"{c.id}\n")
