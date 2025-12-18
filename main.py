@@ -362,10 +362,14 @@ def main():
     print(f"Cargando {len(ids)} cartas...\n")
 
     cards = []
+    total = len(ids)
+    i=0
     for cid in ids:
+        i += 1
         data = fetch_card(cid)
         card = Card(data)
-        print(f"Cargada: {card.name} ({', '.join(card.colors) or 'Incoloro'})")
+        print(f"\rCargando {i}/{total} - {card.name} ({', '.join(card.colors) or 'Incoloro'})", end="")
+
         tag_card(card)
         cards.append(card)
 
