@@ -39,6 +39,17 @@ function imprimir(){
                 const carta = jsonTotal[id];
                 console.log("ID:", id);
                 console.log("------");
+                
+                var node = document.getElementById('conjunto');
+                node.innerHTML += `
+                    <div class='bg-gray-600 p-5 rounded-md'>
+                        <img src='${carta.image_url}' 
+                            class='h-90 w-auto rounded-lg hover:scale-110 transition delay-150 duration-300 ease-in-out'>
+                        <h1 class='mt-1.5 text-center text-amber-50'>${carta.name}</h1>
+                    </div>
+                    `;
+
+                
             }
             
         }
