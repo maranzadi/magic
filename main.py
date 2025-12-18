@@ -210,53 +210,25 @@ def score_card(card, archetype, commander, effects):
     if "removal" in card.tags:
         score += 2
 
-    # ───────── SINERGIAS AVANZADAS ─────────
+    # ───────── SINERGIAS AVANZADAS AUTOMÁTICAS ─────────
+    BONUS_EFFECT_SCORE = 4
 
-    # ETB doble (Yarok, Panharmonicon commanders)
-    if "double_etb" in effects and "etb" in card.tags:
-        score += 5
-
-    # ataques (Isshin, etc.)
-    if "attack_triggers" in effects and "attack" in card.tags:
-        score += 4
-
-    # proliferar (Atraxa)
-    if "proliferate" in effects and (
-        "+1/+1" in card.tags or "proliferate" in card.text.lower()
-    ):
-        score += 4
-
-    # flashback / retrospectiva
-    if "flashback" in effects and "flashback" in card.tags:
-        score += 3
-
-    # exilio como recurso
-    if "exile_matters" in effects and "exile" in card.tags:
-        score += 3
-
-    # bending (homebrew / custom mechanics)
-    if "earthbend" in effects and "earthbend" in card.tags:
-        score += 4
-    if "firebend" in effects and "firebend" in card.tags:
-        score += 4
-    if "waterbend" in effects and "waterbend" in card.tags:
-        score += 4
-    if "airbend" in effects and "airbend" in card.tags:
-        score += 4
-
-    # bloqueos relevantes
-    if "blocked_matters" in effects and "blocked" in card.tags:
-        score += 3
+    for effect, keywords in COMMANDER_EFFECTS.items():
+        if effect in effects:
+            # revisa tags primero
+            if any(k.lower() in card.tags for k in keywords):
+                score += BONUS_EFFECT_SCORE
+                continue  # ya sumó, no hace falta revisar texto
+            # revisa texto de la carta
+            text_lower = card.text.lower()
+            if any(k.lower() in text_lower for k in keywords):
+                score += BONUS_EFFECT_SCORE
 
     # curva
     if card.cmc <= 3:
         score += 1
 
-    # legalidad de color
-    if set(card.colors).issubset(set(commander.colors)):
-        score += 2
-    else:
-        score -= 100
+    
 
     card.score = score
 
