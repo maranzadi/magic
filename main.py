@@ -1,8 +1,8 @@
-import requests
-import time
+import json
 
-SCRYFALL_CARD_URL = "https://api.scryfall.com/cards/{}"
-REQUEST_DELAY = 0.11  # seguro para rate limit
+
+with open("cards.json", "r", encoding="utf-8") as f:
+    CARD_DB = json.load(f)
 
 # ─────────────────────────────────────────────
 # MODELO DE CARTA
@@ -43,10 +43,19 @@ class Card:
 # ─────────────────────────────────────────────
 
 def fetch_card(card_id):
-    r = requests.get(SCRYFALL_CARD_URL.format(card_id))
-    r.raise_for_status()
-    time.sleep(REQUEST_DELAY)
-    return r.json()
+    if card_id not in CARD_DB:
+        raise KeyError(f"Carta con id {card_id} no encontrada en cards.json")
+
+    data = CARD_DB[card_id]
+
+    return {
+        "id": data["id"],
+        "name": data["name"],
+        "cmc": data.get("cmc", 0),
+        "color_identity": data.get("colors", []),
+        "type_line": data.get("type_line", ""),
+        "oracle_text": data.get("text", ""),
+    }
 
 
 
@@ -357,8 +366,8 @@ def generate_lands(deck, commander):
 # ─────────────────────────────────────────────
 
 def main():
-    with open("scryfall_ids.txt") as f:
-        ids = [l.strip() for l in f if l.strip()]
+    ids = list(CARD_DB.keys())
+
 
     print(f"Cargando {len(ids)} cartas...\n")
 
@@ -394,6 +403,18 @@ def main():
         print(f"1 {land}")
 
     print("\n✔ Mazo Commander (100 cartas) generado.")
+
+
+    with open(f'{commander.name}.txt', 'w', encoding='utf-8') as txtfile:
+        txtfile.write(f"{commander.id}\n")
+        for c in deck:
+            txtfile.write(f"{c.id}\n")
+        for land in lands:
+            txtfile.write(f"{land}\n")
+
+
+                
+                    
 
 if __name__ == "__main__":
     main()
