@@ -41,6 +41,11 @@ function imprimir(){
                 console.log("------");
                 
                 var node = document.getElementById('conjunto');
+
+                if(id == lista[0]){
+                    node = document.getElementById('commander');
+                }
+
                 node.innerHTML += `
                     <div class='bg-gray-600 p-5 rounded-md'>
                         <img src='${carta.image_url}' 
