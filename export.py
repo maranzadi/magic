@@ -3,12 +3,15 @@ import json
 import os
 import time
 import requests
+import shutil
+
 
 # =========================
 # CONFIG
 # =========================
 
 JSON_FILE = "cards.json"
+JSON_FILE2 = "./webPage/src/"
 SCRYFALL_API = "https://api.scryfall.com/cards/{}"
 
 REQUIRED_FIELDS = {
@@ -56,6 +59,16 @@ def save_cards_db(db):
     with open(JSON_FILE, "w", encoding="utf-8") as f:
         json.dump(db, f, ensure_ascii=False, indent=2)
 
+def copi():
+    origen = JSON_FILE
+
+    # Archivo destino
+    destino = JSON_FILE2
+
+    # Copiar
+    shutil.copy(origen, destino)
+
+    print("Archivo copiado correctamente")
 
 # =========================
 # SCRYFALL
@@ -141,6 +154,7 @@ def main():
             print(f"\rCargada: {card.name}", end="")
 
     save_cards_db(cards_db)
+    copi()
     print("\n✅ Proceso completado")
 
 
