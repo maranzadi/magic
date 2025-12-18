@@ -19,6 +19,9 @@ class Card:
         self.is_legendary = "Legendary" in self.type_line
         self.tags = set()
         self.score = 0
+        
+        main_types = self.type_line.split("—")[0]  # antes del —
+        self.types = set(main_types.strip().split())
 
 # ─────────────────────────────────────────────
 # SCRYFALL
@@ -368,7 +371,7 @@ def main():
     print(f"1 {commander.name}\n")
 
     for c in deck:
-        print(f"1 {c.name}")
+        print(f"1 {c.name} - {', '.join(sorted(c.types))}")
 
     for land in lands:
         print(f"1 {land}")
