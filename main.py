@@ -63,6 +63,37 @@ TAG_RULES = {
     ],
     "etb": [
         "enters the battlefield"
+    ],
+     "flashback": [
+        "flashback"
+    ],
+    "exile": [
+        "exile",
+        "exiled",
+        "exiles"
+    ],
+    "attack": [
+        "attack",
+        "attacks"
+    ],
+    "blocked": [
+        "blocked"
+    ],
+    "cost_reduction_target": [
+        "costs",
+        "less to cast"
+    ],
+    "earthbend": [
+        "earthbend"
+    ],
+    "firebend": [
+        "firebend"
+    ],
+    "waterbend": [
+        "waterbend"
+    ],
+    "airbend": [
+        "airbend"
     ]
 }
 
@@ -101,7 +132,8 @@ def choose_commander(cards):
 COMMANDER_EFFECTS = {
     "double_etb": [
         "trigger an additional time",
-        "enters the battlefield causes"
+        "triggers an additional time",
+        "enters the battlefield causes",
     ],
     "attack_triggers": [
         "whenever a creature attacks"
@@ -110,10 +142,34 @@ COMMANDER_EFFECTS = {
         "proliferate"
     ],
     "cost_reduction": [
-        "cost",
-        "less to cast"
+        "less to cast",
+        "costs less"
+    ],
+    "flashback": [
+        "flashback"
+    ],
+    "exile_matters": [
+        "exile",
+        "exiled",
+        "exiles"
+    ],
+    "earthbend": [
+        "earthbend"
+    ],
+    "firebend": [
+        "firebend"
+    ],
+    "waterbend": [
+        "waterbend"
+    ],
+    "airbend": [
+        "airbend"
+    ],
+    "blocked_matters": [
+        "blocked"
     ],
 }
+
 
 def detect_commander_effects(commander):
     effects = set()
@@ -141,10 +197,12 @@ def detect_archetype(cards):
 def score_card(card, archetype, commander, effects):
     score = 0
 
+    # sinergia con arquetipo general
     for tag in archetype:
         if tag in card.tags:
             score += 3
 
+    # roles básicos
     if "ramp" in card.tags:
         score += 2
     if "draw" in card.tags:
@@ -152,23 +210,56 @@ def score_card(card, archetype, commander, effects):
     if "removal" in card.tags:
         score += 2
 
-    # sinergias por habilidades especiales
+    # ───────── SINERGIAS AVANZADAS ─────────
+
+    # ETB doble (Yarok, Panharmonicon commanders)
     if "double_etb" in effects and "etb" in card.tags:
         score += 5
-    if "attack_triggers" in effects and "attack" in card.text.lower():
-        score += 4
-    if "proliferate" in effects and "+1/+1" in card.tags:
+
+    # ataques (Isshin, etc.)
+    if "attack_triggers" in effects and "attack" in card.tags:
         score += 4
 
+    # proliferar (Atraxa)
+    if "proliferate" in effects and (
+        "+1/+1" in card.tags or "proliferate" in card.text.lower()
+    ):
+        score += 4
+
+    # flashback / retrospectiva
+    if "flashback" in effects and "flashback" in card.tags:
+        score += 3
+
+    # exilio como recurso
+    if "exile_matters" in effects and "exile" in card.tags:
+        score += 3
+
+    # bending (homebrew / custom mechanics)
+    if "earthbend" in effects and "earthbend" in card.tags:
+        score += 4
+    if "firebend" in effects and "firebend" in card.tags:
+        score += 4
+    if "waterbend" in effects and "waterbend" in card.tags:
+        score += 4
+    if "airbend" in effects and "airbend" in card.tags:
+        score += 4
+
+    # bloqueos relevantes
+    if "blocked_matters" in effects and "blocked" in card.tags:
+        score += 3
+
+    # curva
     if card.cmc <= 3:
         score += 1
 
+    # legalidad de color
     if set(card.colors).issubset(set(commander.colors)):
         score += 2
     else:
-        score -= 100  # ilegal
+        score -= 100
 
     card.score = score
+
 
 # ─────────────────────────────────────────────
 # CONSTRUCCIÓN DEL MAZO
@@ -265,7 +356,7 @@ def generate_lands(deck, commander):
 # ─────────────────────────────────────────────
 
 def main():
-    with open("collection.txt") as f:
+    with open("scryfall_ids.txt") as f:
         ids = [l.strip() for l in f if l.strip()]
 
     print(f"Cargando {len(ids)} cartas...\n")
@@ -274,6 +365,7 @@ def main():
     for cid in ids:
         data = fetch_card(cid)
         card = Card(data)
+        print(f"Cargada: {card.name} ({', '.join(card.colors) or 'Incoloro'})")
         tag_card(card)
         cards.append(card)
 
