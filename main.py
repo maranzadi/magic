@@ -20,6 +20,8 @@ class Card:
         self.is_legendary = "Legendary" in self.type_line
         self.tags = set()
         self.score = 0
+        self.score_breakdown = {}
+
         
         main_types = self.type_line.split("—")[0]  # antes del —
         self.types = set(main_types.strip().split())
@@ -58,7 +60,9 @@ def fetch_card(card_id):
         "oracle_text": data.get("text", ""),
     }
 
-
+def add_score(card, reason, value):
+    card.score += value
+    card.score_breakdown[reason] = card.score_breakdown.get(reason, 0) + value
 
 # ─────────────────────────────────────────────
 # TAGGING
@@ -275,55 +279,48 @@ def detect_archetype(cards):
 # ─────────────────────────────────────────────
 
 def score_card(card, archetype, commander, effects, deck=None):
-    score = 0
+    card.score = 0
+    card.score_breakdown = {}
 
     # legalidad de color
     if set(card.colors).issubset(set(commander.colors)):
-        score += 2
+        add_score(card, "color_identity", 2)
     else:
-        score -= 1000
-    
-    if score < 0:
-        card.score = score
+        add_score(card, "color_mismatch", -1000)
         return
 
-    # sinergia con arquetipo general
+    # sinergia con arquetipo
     for tag in archetype:
         if tag in card.tags:
-            score += 3
+            add_score(card, f"archetype_{tag}", 3)
 
     # roles básicos
     if "ramp" in card.tags:
-        score += 2
+        add_score(card, "ramp_role", 2)
     if "draw" in card.tags:
-        score += 2
+        add_score(card, "draw_role", 2)
     if "removal" in card.tags:
-        score += 2
+        add_score(card, "removal_role", 2)
 
-    # ───────── SINERGIAS AVANZADAS AUTOMÁTICAS ─────────
-    BONUS_EFFECT_SCORE = 4
-
+    # comandante
+    BONUS = 4
     for effect, keywords in COMMANDER_EFFECTS.items():
         if effect in effects:
-            if any(k.lower() in card.tags for k in keywords):
-                score += BONUS_EFFECT_SCORE
-                continue
-            text_lower = card.text.lower()
-            if any(k.lower() in text_lower for k in keywords):
-                score += BONUS_EFFECT_SCORE
+            if effect.replace("_matters", "") in card.tags:
+                add_score(card, f"commander_{effect}", BONUS)
+            elif any(k in card.text.lower() for k in keywords):
+                add_score(card, f"commander_text_{effect}", BONUS)
 
     # curva
     if card.cmc <= 3:
-        score += 1
+        add_score(card, "low_cmc", 1)
 
-
+    # combos
     if deck:
-        dynamic_combos = detect_dynamic_combos(deck, effects)
-        for combo in dynamic_combos:
+        for combo in detect_dynamic_combos(deck, effects):
             if card.name in combo["cards"]:
-                score += combo["bonus_score"]
+                add_score(card, f"combo_{combo['type']}", combo["bonus_score"])
 
-    card.score = score
 
 
 DYNAMIC_COMBOS = {
