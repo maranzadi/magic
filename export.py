@@ -10,6 +10,7 @@ import shutil
 # CONFIG
 # =========================
 
+mainFile = "ManaBox_Collection.csv"
 JSON_FILE = "cards.json"
 JSON_FILE2 = "./webPage/src/"
 SCRYFALL_API = "https://api.scryfall.com/cards/{}"
@@ -139,7 +140,7 @@ def main():
     cards_db = load_cards_db()
     cards = []
 
-    with open("ManaBox_Collection.csv", newline="", encoding="utf-8") as csvfile:
+    with open(mainFile, newline="", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
 
         for row in reader:
