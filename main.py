@@ -197,6 +197,16 @@ def detect_archetype(cards):
 def score_card(card, archetype, commander, effects):
     score = 0
 
+    # legalidad de color
+    if set(card.colors).issubset(set(commander.colors)):
+        score += 2
+    else:
+        score -= 1000
+    
+    if score < 0:
+        card.score = score
+        return
+
     # sinergia con arquetipo general
     for tag in archetype:
         if tag in card.tags:
