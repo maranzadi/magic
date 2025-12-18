@@ -1,71 +1,49 @@
-const lista = [];
-let jsonTotal = "";
+let cardsDB = {}; // Para guardar los datos de cards.json
 
-fetch("./decks/Toph, the First Metalbender.txt")
-  .then(res => res.text())
-  .then(text => {
-    // Separar por saltos de línea
-    const lineas = text.split("\n").filter(l => l.trim() !== ""); 
-    // Agregar cada línea al array
-    lista.push(...lineas); 
-    //console.log(lista);
-    loadJson()
-    
-})
-.catch(e => console.error(e));
+// Primero cargamos las cartas
+fetch("./cards.json")
+  .then(res => res.json())
+  .then(data => {
+    cardsDB = data; // Guardamos los datos de todas las cartas
+    return fetch("./decks/Toph, the First Metalbender.json");
+  })
+  .then(res => res.json())
+  .then(deckData => {
+    renderDeck(deckData);
+  })
+  .catch(e => console.error("Error cargando el JSON:", e));
 
-//console.log(lista)
+function renderDeck(deckData) {
+  const commanderNode = document.getElementById('commander');
+  const conjuntoNode = document.getElementById('conjunto');
 
-function loadJson(){
-    imprimir()
-    
-    fetch("./cards.json")
-    .then(res => res.json())
-    .then(data => {
-        //console.log(data);
-        jsonTotal = data;
-        imprimir()
-    })
-    .catch(e => console.error(e));
+  // Renderizamos el comandante
+  const commander = deckData.commander;
+  const commanderCard = cardsDB[commander.id] || {};
+  
+  commanderNode.innerHTML = `
+    <div class='bg-gray-600 p-5 rounded-md'>
+      <img src='${commanderCard.image_url || ""}' 
+           class='h-90 w-auto rounded-lg hover:scale-110 transition delay-150 duration-300 ease-in-out'>
+      <h1 class='mt-1.5 text-center text-amber-50'>
+        ${commander.name} - Score: ${commander.score}
+      </h1>
+      <pre class='text-white'>${JSON.stringify(commander.score_breakdown, null, 2)}</pre>
+    </div>
+  `;
 
-}
-
-
-function imprimir(){
-    //console.log(jsonTotal)
-    let listaNotarekin =[]
-    for (const z of lista) {
-        let listBerria = z.split(";");
-        listaNotarekin.push(listBerria);
-        console.log(listBerria);
-    }
-
-    console.log(listaNotarekin);
-
-    for (const id in jsonTotal) {
-        if (jsonTotal.hasOwnProperty(id)) {
-            for(let i =0;i<listaNotarekin.length;i++){
-                if(listaNotarekin[i][0] == id){
-                    const carta = jsonTotal[id];
-                    console.log("ID:", id);
-                    console.log("------");
-                    
-                    var node = document.getElementById('conjunto');
-
-                    if(id == listaNotarekin[0][0]){
-                        node = document.getElementById('commander');
-                    }
-
-                    node.innerHTML += `
-                        <div class='bg-gray-600 p-5 rounded-md'>
-                            <img src='${carta.image_url}' 
-                                class='h-90 w-auto rounded-lg hover:scale-110 transition delay-150 duration-300 ease-in-out'>
-                            <h1 class='mt-1.5 text-center text-amber-50'>${carta.name} - ${listaNotarekin[i][1]}</h1>
-                        </div>
-                        `;
-                    }
-            }
-                        
-        }
-    }
+  // Renderizamos el resto del deck
+  deckData.deck.slice(1).forEach(c => {
+    const carta = cardsDB[c.id] || {};
+    conjuntoNode.innerHTML += `
+      <div class='bg-gray-600 p-5 rounded-md'>
+        <img src='${carta.image_url || ""}' 
+             class='h-90 w-auto rounded-lg hover:scale-110 transition delay-150 duration-300 ease-in-out'>
+        <h1 class='mt-1.5 text-center text-amber-50'>
+          ${c.name} - Score: ${c.score} ${c.included ? "(Incluida)" : "(No incluida)"}
+        </h1>
+        <pre class='text-white'>${JSON.stringify(c.score_breakdown, null, 2)}</pre>
+      </div>
+    `;
+  });
 }
