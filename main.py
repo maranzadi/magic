@@ -94,6 +94,9 @@ TAG_RULES = {
     ],
     "airbend": [
         "airbend"
+    ],
+    "land": [
+        "land"
     ]
 }
 
@@ -167,6 +170,9 @@ COMMANDER_EFFECTS = {
     ],
     "blocked_matters": [
         "blocked"
+    ],
+    "land": [
+        "land"
     ],
 }
 
