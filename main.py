@@ -405,9 +405,10 @@ def main():
 
     print("\n✔ Mazo Commander (100 cartas) generado.")
 
-    os.makedirs("./decks", exist_ok=True)
+    ruta = "./webPage/src/decks/"
+    os.makedirs(ruta, exist_ok=True)
 
-    file_path = os.path.join("./decks", f"{commander.name}.txt")
+    file_path = os.path.join(ruta, f"{commander.name}.txt")
 
     with open(file_path, 'w', encoding='utf-8') as txtfile:
         txtfile.write(f"{commander.id}\n")
