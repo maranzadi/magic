@@ -86,7 +86,14 @@ TAG_RULES = {
         "token"
     ],
     "+1/+1": [
-        "+1/+1 counter"
+        "+1/+1 counter",
+        "+1/+0",
+        "+2/+0",
+        "+1/+2",
+        "+2/+2",
+        "+0/+2",
+        "counter",
+        "counters"
     ],
     "sacrifice": [
         "sacrifice"
@@ -130,6 +137,10 @@ TAG_RULES = {
     ],
     "lander": [
         "lander"  # nueva tag para la habilidad lander
+    ],
+    "artifacts":[
+        "artifacts",
+        "artifatc"
     ]
 }
 
@@ -206,6 +217,9 @@ COMMANDER_EFFECTS = {
     "land": [
         "land"
     ],
+    "artifacts":[
+        "artifacts"
+    ]
 }
 
 def detect_commander_effects(commander):
@@ -287,7 +301,8 @@ DYNAMIC_COMBOS = {
     "etb_synergy": ["etb", "double_etb"],
     "proliferate_synergy": ["proliferate", "+1/+1"],
     "ramp_synergy": ["ramp", "cost_reduction_target"],
-    "sacrifice_synergy": ["sacrifice", "etb"]
+    "sacrifice_synergy": ["sacrifice", "etb"],
+    "lands_artifatcs_land_sinergy":["lands, artifacts, ramp"]
 }
 
 
