@@ -15,7 +15,11 @@ class Card:
         self.id = data["id"]
         self.name = data["name"]
         self.cmc = data.get("cmc", 0)
-        self.colors = data.get("color_identity", [])
+
+        self.color_identity = data.get("color_identity", [])
+        self.colors = data.get("colors", [])
+
+        
         self.type_line = data.get("type_line", "")
 
         raw_text = data.get("oracle_text") or ""
@@ -291,11 +295,13 @@ def score_card(card, archetype, commander, effects, deck=None):
     card.score = 0
     card.score_breakdown = {}
 
-    # legalidad de color
-    if set(card.colors).issubset(set(commander.colors)):
+    card_ci = card.color_identity or []
+    commander_ci = commander.color_identity or []
+
+    if set(card_ci).issubset(set(commander_ci)):
         add_score(card, "color_identity", 2)
     else:
-        add_score(card, "color_mismatch", -1000)
+        add_score(card, "color_mismatch", -10000000)
         return
 
     # sinergia con arquetipo
@@ -567,6 +573,8 @@ def main():
                 "name": c.name,
                 "score": c.score,
                 "score_breakdown": getattr(c, "score_breakdown", {}),
+                "colors": c.colors,
+
                 "included": True
             })
 
@@ -578,6 +586,7 @@ def main():
                     "name": c.name,
                     "score": c.score,
                     "score_breakdown": getattr(c, "score_breakdown", {}),
+                    "colors": c.colors,
                     "included": False
                 })
 
