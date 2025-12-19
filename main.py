@@ -480,6 +480,15 @@ def generate_lands(deck, commander):
 # MAIN
 # ─────────────────────────────────────────────
 
+
+def safe_filename(name):
+    # Reemplaza cualquier cosa que no sea letra, número, espacio, guión o _
+    name = re.sub(r'[^\w\s-]', '', name)
+    # Reemplaza espacios por _
+    name = name.replace(' ', '_')
+    return name
+
+
 def main():
     ids = list(CARD_DB.keys())
 
