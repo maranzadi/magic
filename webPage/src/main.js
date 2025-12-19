@@ -5,7 +5,7 @@ fetch("./cards.json")
   .then(res => res.json())
   .then(data => {
     cardsDB = data; // Guardamos los datos de todas las cartas
-    return fetch("./decks/Toph, the First Metalbender.json");
+    return fetch("./decks/Toph_the_First_Metalbender.json");
   })
   .then(res => res.json())
   .then(deckData => {
