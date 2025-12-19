@@ -190,7 +190,7 @@ def tag_card(card):
 # COMANDANTE
 # ─────────────────────────────────────────────
 
-def choose_commander_manual(cards):
+def choose_commander_manual(cards, numero):
     candidates = [c for c in cards if c.is_legendary and "Creature" in c.type_line]
     if not candidates:
         raise RuntimeError("No hay comandante legal en la colección.")
