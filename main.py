@@ -303,7 +303,7 @@ def score_card(card, archetype, commander, effects, deck=None):
         add_score(card, "removal_role", 2)
 
     # comandante
-    BONUS = 4
+    BONUS = 20
     for effect, keywords in COMMANDER_EFFECTS.items():
         if effect in effects:
             if effect.replace("_matters", "") in card.tags:
@@ -324,11 +324,11 @@ def score_card(card, archetype, commander, effects, deck=None):
 
 
 DYNAMIC_COMBOS = {
-    "etb_synergy": ["etb", "double_etb"],
-    "proliferate_synergy": ["proliferate", "+1/+1"],
-    "ramp_synergy": ["ramp", "cost_reduction_target"],
-    "sacrifice_synergy": ["sacrifice", "etb"],
-    "lands_artifacts_ramp_synergy": ["land", "artifact", "ramp", "landfall"]
+    # "etb_synergy": ["etb", "double_etb"],
+    # "proliferate_synergy": ["proliferate", "+1/+1"],
+    # "ramp_synergy": ["ramp", "cost_reduction_target"],
+    # "sacrifice_synergy": ["sacrifice", "etb"],
+    "lands_artifacts_ramp_synergy": ["land", "artifact", "landfall"]
 }
 
 
@@ -527,7 +527,8 @@ def main():
             "name": commander.name,
             "colors": commander.colors,
             "score": commander.score,
-            "score_breakdown": getattr(commander, "score_breakdown", {})
+            "score_breakdown": getattr(commander, "score_breakdown", {}),
+            "commander_tags": list(commander.tags)
         },
         "deck": [],
         "lands": lands,
