@@ -28,7 +28,7 @@ function renderDeck(deckData) {
       <h1 class='mt-1.5 text-center text-amber-50'>
         ${commander.name} - Score: ${commander.score}
       </h1>
-      <pre class='text-white'>${JSON.stringify(commander.score_breakdown, null, 2)}</pre>
+      
     </div>
   `;
 
@@ -42,8 +42,11 @@ function renderDeck(deckData) {
         <h1 class='mt-1.5 text-center text-amber-50'>
           ${c.name} - Score: ${c.score} ${c.included ? "(Incluida)" : "(No incluida)"}
         </h1>
-        <pre class='text-white'>${JSON.stringify(c.score_breakdown, null, 2)}</pre>
       </div>
     `;
   });
 }
+
+//          PARA VER LAS ESTADISTICAS INTERNAS
+//          <pre class='text-white'>${JSON.stringify(c.score_breakdown, null, 2)}</pre>
+//          <pre class='text-white'>${JSON.stringify(commander.score_breakdown, null, 2)}</pre>
