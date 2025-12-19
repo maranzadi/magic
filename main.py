@@ -195,15 +195,19 @@ def choose_commander_manual(cards, numero):
     if not candidates:
         raise RuntimeError("No hay comandante legal en la colección.")
 
-    print("Elige tu comandante:")
-    for i, c in enumerate(candidates, start=1):
-        print(f"{i}. {c.name} ({', '.join(c.colors) or 'Incoloro'})")
+    # print("Elige tu comandante:")
+    # for i, c in enumerate(candidates, start=1):
+    #     print(f"{i}. {c.name} ({', '.join(c.colors) or 'Incoloro'})")
 
-    while True:
-        choice = input(f"Ingrese el número (1-{len(candidates)}): ").strip()
-        if choice.isdigit() and 1 <= int(choice) <= len(candidates):
-            return candidates[int(choice)-1]
-        print("Opción inválida, intenta de nuevo.")
+    choice = numero
+    if 0 <= int(choice) <= len(candidates):
+        return candidates[int(choice)]
+   
+# while True:
+    #     choice = input(f"Ingrese el número (1-{len(candidates)}): ").strip()
+    #     if choice.isdigit() and 1 <= int(choice) <= len(candidates):
+    #         return candidates[int(choice)-1]
+    #     print("Opción inválida, intenta de nuevo.")
 
 # ─────────────────────────────────────────────
 # EFECTOS ESPECIALES DEL COMANDANTE
