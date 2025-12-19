@@ -36,7 +36,7 @@ function renderDeck(deckData) {
 
 
   deckData.other_cards
-    .filter(c => c.score !== 0)
+    .filter(c => Number(c.score) > 0)
     .sort((a, b) => b.score - a.score)
     .forEach(c => {
     const carta = cardsDB[c.id] || {};
