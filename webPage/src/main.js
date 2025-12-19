@@ -33,7 +33,10 @@ function renderDeck(deckData) {
   `;
 
   // Renderizamos el resto del deck
-  deckData.deck.slice(1).forEach(c => {
+    deckData.deck
+    .slice(1)
+    .sort((a, b) => b.score - a.score)
+    .forEach(c => {
     const carta = cardsDB[c.id] || {};
     conjuntoNode.innerHTML += `
       <div class='bg-gray-600 p-5 rounded-md'>
