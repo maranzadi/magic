@@ -5,7 +5,7 @@ fetch("./cards.json")
   .then(res => res.json())
   .then(data => {
     cardsDB = data; // Guardamos los datos de todas las cartas
-    return fetch("./decks/Toph, the First Metalbender.json");
+    return fetch("./decks/Toph_the_First_Metalbender.json");
   })
   .then(res => res.json())
   .then(deckData => {
@@ -36,7 +36,7 @@ function renderDeck(deckData) {
 
 
   deckData.other_cards
-    .filter(c => c.score !== 0)
+    .filter(c => Number(c.score) > 0)
     .sort((a, b) => b.score - a.score)
     .forEach(c => {
     const carta = cardsDB[c.id] || {};

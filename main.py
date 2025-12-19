@@ -15,7 +15,11 @@ class Card:
         self.id = data["id"]
         self.name = data["name"]
         self.cmc = data.get("cmc", 0)
-        self.colors = data.get("color_identity", [])
+
+        self.color_identity = data.get("color_identity", [])
+        self.colors = data.get("colors", [])
+
+        
         self.type_line = data.get("type_line", "")
 
         raw_text = data.get("oracle_text") or ""
@@ -190,20 +194,24 @@ def tag_card(card):
 # COMANDANTE
 # ─────────────────────────────────────────────
 
-def choose_commander_manual(cards):
+def choose_commander_manual(cards, numero):
     candidates = [c for c in cards if c.is_legendary and "Creature" in c.type_line]
     if not candidates:
         raise RuntimeError("No hay comandante legal en la colección.")
 
-    print("Elige tu comandante:")
-    for i, c in enumerate(candidates, start=1):
-        print(f"{i}. {c.name} ({', '.join(c.colors) or 'Incoloro'})")
+    # print("Elige tu comandante:")
+    # for i, c in enumerate(candidates, start=1):
+    #     print(f"{i}. {c.name} ({', '.join(c.colors) or 'Incoloro'})")
 
-    while True:
-        choice = input(f"Ingrese el número (1-{len(candidates)}): ").strip()
-        if choice.isdigit() and 1 <= int(choice) <= len(candidates):
-            return candidates[int(choice)-1]
-        print("Opción inválida, intenta de nuevo.")
+    choice = numero
+    if 0 <= int(choice) <= len(candidates):
+        return candidates[int(choice)]
+   
+# while True:
+    #     choice = input(f"Ingrese el número (1-{len(candidates)}): ").strip()
+    #     if choice.isdigit() and 1 <= int(choice) <= len(candidates):
+    #         return candidates[int(choice)-1]
+    #     print("Opción inválida, intenta de nuevo.")
 
 # ─────────────────────────────────────────────
 # EFECTOS ESPECIALES DEL COMANDANTE
@@ -287,11 +295,13 @@ def score_card(card, archetype, commander, effects, deck=None):
     card.score = 0
     card.score_breakdown = {}
 
-    # legalidad de color
-    if set(card.colors).issubset(set(commander.colors)):
+    card_ci = card.color_identity or []
+    commander_ci = commander.color_identity or []
+
+    if set(card_ci).issubset(set(commander_ci)):
         add_score(card, "color_identity", 2)
     else:
-        add_score(card, "color_mismatch", -1000)
+        add_score(card, "color_mismatch", -10000000)
         return
 
     # sinergia con arquetipo
@@ -480,6 +490,15 @@ def generate_lands(deck, commander):
 # MAIN
 # ─────────────────────────────────────────────
 
+
+def safe_filename(name):
+    # Reemplaza cualquier cosa que no sea letra, número, espacio, guión o _
+    name = re.sub(r'[^\w\s-]', '', name)
+    # Reemplaza espacios por _
+    name = name.replace(' ', '_')
+    return name
+
+
 def main():
     ids = list(CARD_DB.keys())
 
@@ -497,73 +516,83 @@ def main():
         cards.append(card)
         print(f"\rCargando {i}/{total} - {card.name} - {card.score} ({', '.join(card.colors) or 'Incoloro'})", end="")
 
+    candidates = [c for c in cards if c.is_legendary and "Creature" in c.type_line]
+    if not candidates:
+        raise RuntimeError("No hay comandante legal en la colección.")
 
-    commander = choose_commander_manual(cards)
-    deck, archetype = build_deck(cards, commander)
-    lands = generate_lands(deck, commander)
+    for i in range(len(candidates)):
+        # print(i)
 
-    print("\n══════════════════════════════════════")
-    print(f"COMANDANTE: {commander.name}")
-    print(f"COLORES: {', '.join(commander.colors) or 'Incoloro'}")
-    print(f"ARQUETIPO: {', '.join(archetype)}")
-    print("══════════════════════════════════════\n")
+        commander = choose_commander_manual(cards, i)
+        deck, archetype = build_deck(cards, commander)
+        lands = generate_lands(deck, commander)
 
-    print("MAZO:\n")
-    print(f"1 {commander.name}\n")
+        print("\n══════════════════════════════════════")
+        print(f"COMANDANTE: {commander.name}")
+        print(f"COLORES: {', '.join(commander.colors) or 'Incoloro'}")
+        print(f"ARQUETIPO: {', '.join(archetype)}")
+        print("══════════════════════════════════════\n")
 
-    for c in deck:
-        print(f"1 {c.name} - {', '.join(sorted(c.types))} - {c.score}")
+        print("MAZO:\n")
+        print(f"1 {commander.name}\n")
 
-    for land in lands:
-        print(f"1 {land}")
+        for c in deck:
+            print(f"1 {c.name} - {', '.join(sorted(c.types))} - {c.score}")
 
-    print("\n✔ Mazo Commander (100 cartas) generado.")
+        # for land in lands:
+        #     print(f"1 {land}")
 
-    ruta = "./webPage/src/decks/"
-    os.makedirs(ruta, exist_ok=True)
+        print("\n✔ Mazo Commander (100 cartas) generado.")
 
-    file_path = os.path.join(ruta, f"{commander.name}.json")
+        ruta = "./webPage/src/decks/"
+        os.makedirs(ruta, exist_ok=True)
 
-    deck_ids = {c.id for c in deck}
+        safe_name = safe_filename(commander.name)
+        file_path = os.path.join(ruta, f"{safe_name}.json")
 
-    output = {
-        "commander": {
-            "id": commander.id,
-            "name": commander.name,
-            "colors": commander.colors,
-            "score": commander.score,
-            "score_breakdown": getattr(commander, "score_breakdown", {}),
-            "commander_tags": list(commander.tags)
-        },
-        "deck": [],
-        "lands": lands,
-        "other_cards": []
-    }
+        deck_ids = {c.id for c in deck}
 
-    # Guardar cartas del deck
-    for c in deck:
-        output["deck"].append({
-            "id": c.id,
-            "name": c.name,
-            "score": c.score,
-            "score_breakdown": getattr(c, "score_breakdown", {}),
-            "included": True
-        })
+        output = {
+            "commander": {
+                "id": commander.id,
+                "name": commander.name,
+                "colors": commander.colors,
+                "score": commander.score,
+                "score_breakdown": getattr(commander, "score_breakdown", {}),
+                "commander_tags": list(commander.tags)
+            },
+            "deck": [],
+            "lands": lands,
+            "other_cards": []
+        }
 
-    # Guardar las demás cartas
-    for c in cards:
-        if c.id not in deck_ids:
-            output["other_cards"].append({
+        # Guardar cartas del deck
+        for c in deck:
+            output["deck"].append({
                 "id": c.id,
                 "name": c.name,
                 "score": c.score,
                 "score_breakdown": getattr(c, "score_breakdown", {}),
-                "included": False
+                "colors": c.colors,
+
+                "included": True
             })
 
-    # Guardar todo en JSON
-    with open(file_path, 'w', encoding='utf-8') as f:
-        json.dump(output, f, ensure_ascii=False, indent=4)
+        # Guardar las demás cartas
+        for c in cards:
+            if c.id not in deck_ids:
+                output["other_cards"].append({
+                    "id": c.id,
+                    "name": c.name,
+                    "score": c.score,
+                    "score_breakdown": getattr(c, "score_breakdown", {}),
+                    "colors": c.colors,
+                    "included": False
+                })
+
+        # Guardar todo en JSON
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(output, f, ensure_ascii=False, indent=4)
 
                     
                         
