@@ -510,73 +510,80 @@ def main():
         cards.append(card)
         print(f"\rCargando {i}/{total} - {card.name} - {card.score} ({', '.join(card.colors) or 'Incoloro'})", end="")
 
+    candidates = [c for c in cards if c.is_legendary and "Creature" in c.type_line]
+    if not candidates:
+        raise RuntimeError("No hay comandante legal en la colección.")
 
-    commander = choose_commander_manual(cards)
-    deck, archetype = build_deck(cards, commander)
-    lands = generate_lands(deck, commander)
+    for i in range(len(candidates)):
+        # print(i)
 
-    print("\n══════════════════════════════════════")
-    print(f"COMANDANTE: {commander.name}")
-    print(f"COLORES: {', '.join(commander.colors) or 'Incoloro'}")
-    print(f"ARQUETIPO: {', '.join(archetype)}")
-    print("══════════════════════════════════════\n")
+        commander = choose_commander_manual(cards, i)
+        deck, archetype = build_deck(cards, commander)
+        lands = generate_lands(deck, commander)
 
-    print("MAZO:\n")
-    print(f"1 {commander.name}\n")
+        print("\n══════════════════════════════════════")
+        print(f"COMANDANTE: {commander.name}")
+        print(f"COLORES: {', '.join(commander.colors) or 'Incoloro'}")
+        print(f"ARQUETIPO: {', '.join(archetype)}")
+        print("══════════════════════════════════════\n")
 
-    for c in deck:
-        print(f"1 {c.name} - {', '.join(sorted(c.types))} - {c.score}")
+        print("MAZO:\n")
+        print(f"1 {commander.name}\n")
 
-    for land in lands:
-        print(f"1 {land}")
+        for c in deck:
+            print(f"1 {c.name} - {', '.join(sorted(c.types))} - {c.score}")
 
-    print("\n✔ Mazo Commander (100 cartas) generado.")
+        for land in lands:
+            print(f"1 {land}")
 
-    ruta = "./webPage/src/decks/"
-    os.makedirs(ruta, exist_ok=True)
+        print("\n✔ Mazo Commander (100 cartas) generado.")
 
-    file_path = os.path.join(ruta, f"{commander.name}.json")
+        ruta = "./webPage/src/decks/"
+        os.makedirs(ruta, exist_ok=True)
 
-    deck_ids = {c.id for c in deck}
+        safe_name = safe_filename(commander.name)
+        file_path = os.path.join(ruta, f"{safe_name}.json")
 
-    output = {
-        "commander": {
-            "id": commander.id,
-            "name": commander.name,
-            "colors": commander.colors,
-            "score": commander.score,
-            "score_breakdown": getattr(commander, "score_breakdown", {}),
-            "commander_tags": list(commander.tags)
-        },
-        "deck": [],
-        "lands": lands,
-        "other_cards": []
-    }
+        deck_ids = {c.id for c in deck}
 
-    # Guardar cartas del deck
-    for c in deck:
-        output["deck"].append({
-            "id": c.id,
-            "name": c.name,
-            "score": c.score,
-            "score_breakdown": getattr(c, "score_breakdown", {}),
-            "included": True
-        })
+        output = {
+            "commander": {
+                "id": commander.id,
+                "name": commander.name,
+                "colors": commander.colors,
+                "score": commander.score,
+                "score_breakdown": getattr(commander, "score_breakdown", {}),
+                "commander_tags": list(commander.tags)
+            },
+            "deck": [],
+            "lands": lands,
+            "other_cards": []
+        }
 
-    # Guardar las demás cartas
-    for c in cards:
-        if c.id not in deck_ids:
-            output["other_cards"].append({
+        # Guardar cartas del deck
+        for c in deck:
+            output["deck"].append({
                 "id": c.id,
                 "name": c.name,
                 "score": c.score,
                 "score_breakdown": getattr(c, "score_breakdown", {}),
-                "included": False
+                "included": True
             })
 
-    # Guardar todo en JSON
-    with open(file_path, 'w', encoding='utf-8') as f:
-        json.dump(output, f, ensure_ascii=False, indent=4)
+        # Guardar las demás cartas
+        for c in cards:
+            if c.id not in deck_ids:
+                output["other_cards"].append({
+                    "id": c.id,
+                    "name": c.name,
+                    "score": c.score,
+                    "score_breakdown": getattr(c, "score_breakdown", {}),
+                    "included": False
+                })
+
+        # Guardar todo en JSON
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(output, f, ensure_ascii=False, indent=4)
 
                     
                         
