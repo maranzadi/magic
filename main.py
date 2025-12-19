@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 
 with open("cards.json", "r", encoding="utf-8") as f:
@@ -16,7 +17,11 @@ class Card:
         self.cmc = data.get("cmc", 0)
         self.colors = data.get("color_identity", [])
         self.type_line = data.get("type_line", "")
-        self.text = data.get("oracle_text") or ""
+
+        raw_text = data.get("oracle_text") or ""
+        self.text = re.sub(r"\([^)]*\)", "", raw_text).strip()
+
+        
         self.is_legendary = "Legendary" in self.type_line
         self.tags = set()
         self.score = 0
