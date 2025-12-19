@@ -28,12 +28,13 @@ cleanup() {
 
 trap cleanup INT
 
+$OS_TYPE=$(uname -s)
 
 sleep 1
-if [[ "$OSTYPE" == "darwin"* ]]; then
+if [[ "$OS_TYPE" == "darwin"* ]]; then
     # macOS
     open http://localhost:8000
-elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+elif [[ "$OS_TYPE" == "linux"* ]]; then
     # Linux
     xdg-open http://localhost:8000
 else
