@@ -1,62 +1,65 @@
-const lista = [];
-let jsonTotal = "";
+let cardsDB = {}; // Para guardar los datos de cards.json
 
-fetch("./decks/Toph, the First Metalbender.txt")
-  .then(res => res.text())
-  .then(text => {
-    // Separar por saltos de línea
-    const lineas = text.split("\n").filter(l => l.trim() !== ""); 
-    // Agregar cada línea al array
-    lista.push(...lineas); 
-    //console.log(lista);
-    loadJson()
-    
-})
-.catch(e => console.error(e));
+// Primero cargamos las cartas
+fetch("./cards.json")
+  .then(res => res.json())
+  .then(data => {
+    cardsDB = data; // Guardamos los datos de todas las cartas
+    return fetch("./decks/Toph, the First Metalbender.json");
+  })
+  .then(res => res.json())
+  .then(deckData => {
+    renderDeck(deckData);
+  })
+  .catch(e => console.error("Error cargando el JSON:", e));
 
-//console.log(lista)
+function renderDeck(deckData) {
+  const commanderNode = document.getElementById('commander');
+  const conjuntoNode = document.getElementById('conjunto');
+  const otrosNode = document.getElementById('noIncluidas');
 
-function loadJson(){
-    imprimir()
-    
-    fetch("./cards.json")
-    .then(res => res.json())
-    .then(data => {
-        //console.log(data);
-        jsonTotal = data;
-        imprimir()
-    })
-    .catch(e => console.error(e));
 
+  // Renderizamos el comandante
+  const commander = deckData.commander;
+  const commanderCard = cardsDB[commander.id] || {};
+  
+  commanderNode.innerHTML = imagen(commanderCard, commander) ;
+
+  // Renderizamos el resto del deck
+    deckData.deck
+    .slice(1)
+    .sort((a, b) => b.score - a.score)
+    .forEach(c => {
+    const carta = cardsDB[c.id] || {};
+    conjuntoNode.innerHTML += imagen(carta, c) ;
+  });
+
+
+  deckData.other_cards
+    .filter(c => c.score !== 0)
+    .sort((a, b) => b.score - a.score)
+    .forEach(c => {
+    const carta = cardsDB[c.id] || {};
+    otrosNode.innerHTML += imagen(carta, c) ;
+  });
 }
 
 
-function imprimir(){
-    //console.log(jsonTotal)
-    for (const id in jsonTotal) {
-        if (jsonTotal.hasOwnProperty(id)) {
-            if(lista.includes(id)){
-                const carta = jsonTotal[id];
-                console.log("ID:", id);
-                console.log("------");
-                
-                var node = document.getElementById('conjunto');
+function imagen(carta, c){
+    valor= `
+      <div class='bg-gray-600 p-5 rounded-md flex flex-col items-center justify-center'>
+        <img src='${carta.image_url || ""}' 
+             class='h-90 rounded-lg hover:scale-110 transition delay-150 duration-300 ease-in-out'>
+        <h1 class='mt-1.5 text-center text-amber-50'>
+          ${c.name} - Score: ${c.score} ${c.included ? "(Incluida)" : "(No incluida)"}
+        </h1>
+      </div>
+    `;
 
-                if(id == lista[0]){
-                    node = document.getElementById('commander');
-                }
-
-                node.innerHTML += `
-                    <div class='bg-gray-600 p-5 rounded-md'>
-                        <img src='${carta.image_url}' 
-                            class='h-90 w-auto rounded-lg hover:scale-110 transition delay-150 duration-300 ease-in-out'>
-                        <h1 class='mt-1.5 text-center text-amber-50'>${carta.name}</h1>
-                    </div>
-                    `;
-
-                
-            }
-            
-        }
-    }
+    return valor
 }
+
+
+//          PARA VER LAS ESTADISTICAS INTERNAS
+//          <pre class='text-white'>${JSON.stringify(c.score_breakdown, null, 2)}</pre>
+//          <pre class='text-white'>${JSON.stringify(commander.score_breakdown, null, 2)}</pre>

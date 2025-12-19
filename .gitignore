@@ -6,3 +6,4 @@ cards.json
 webPage/node_modules/
 decks/
 webPage/src/output.css
+**/.DS_Store

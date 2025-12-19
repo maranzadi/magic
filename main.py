@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 
 with open("cards.json", "r", encoding="utf-8") as f:
@@ -16,10 +17,16 @@ class Card:
         self.cmc = data.get("cmc", 0)
         self.colors = data.get("color_identity", [])
         self.type_line = data.get("type_line", "")
-        self.text = data.get("oracle_text") or ""
+
+        raw_text = data.get("oracle_text") or ""
+        self.text = re.sub(r"\([^)]*\)", "", raw_text).strip()
+
+        
         self.is_legendary = "Legendary" in self.type_line
         self.tags = set()
         self.score = 0
+        self.score_breakdown = {}
+
         
         main_types = self.type_line.split("—")[0]  # antes del —
         self.types = set(main_types.strip().split())
@@ -58,7 +65,9 @@ def fetch_card(card_id):
         "oracle_text": data.get("text", ""),
     }
 
-
+def add_score(card, reason, value):
+    card.score += value
+    card.score_breakdown[reason] = card.score_breakdown.get(reason, 0) + value
 
 # ─────────────────────────────────────────────
 # TAGGING
@@ -86,7 +95,14 @@ TAG_RULES = {
         "token"
     ],
     "+1/+1": [
-        "+1/+1 counter"
+        "+1/+1 counter",
+        "+1/+0",
+        "+2/+0",
+        "+1/+2",
+        "+2/+2",
+        "+0/+2",
+        "counter",
+        "counters"
     ],
     "sacrifice": [
         "sacrifice"
@@ -126,7 +142,25 @@ TAG_RULES = {
         "airbend"
     ],
     "land": [
-        "land"
+        "land",
+        "landfall",
+        "Landfall"
+    ],
+    "landfall": [
+        "land",
+        "landfall",
+        "Landfall"
+    ],
+    "lander": [
+        "lander"  # nueva tag para la habilidad lander
+    ],
+    "artifact":[
+        "artifacts",
+        "artifatc"
+    ],
+    "ally":[
+        "ally",
+        "Ally"
     ]
 }
 
@@ -137,6 +171,20 @@ def tag_card(card):
             if k in text:
                 card.tags.add(tag)
                 break
+    
+     # ───── Tags por TYPE_LINE ─────
+    if "Artifact" in card.type_line:
+        card.tags.add("artifact")
+
+    if "Land" in card.type_line:
+        card.tags.add("land")
+
+    if "Artifact Land" in card.type_line:
+        card.tags.add("artifact")
+        card.tags.add("land")
+    
+    if "Ally" in card.type_line:
+        card.tags.add("ally")
 
 # ─────────────────────────────────────────────
 # COMANDANTE
@@ -203,6 +251,13 @@ COMMANDER_EFFECTS = {
     "land": [
         "land"
     ],
+    "artifact_matters": [
+        "artifact"
+    ],
+    "ally": [
+        "ally"
+    ]
+
 }
 
 def detect_commander_effects(commander):
@@ -228,98 +283,155 @@ def detect_archetype(cards):
 # SCORING
 # ─────────────────────────────────────────────
 
-def score_card(card, archetype, commander, effects):
-    score = 0
+def score_card(card, archetype, commander, effects, deck=None):
+    card.score = 0
+    card.score_breakdown = {}
 
     # legalidad de color
     if set(card.colors).issubset(set(commander.colors)):
-        score += 2
+        add_score(card, "color_identity", 2)
     else:
-        score -= 1000
-    
-    if score < 0:
-        card.score = score
+        add_score(card, "color_mismatch", -1000)
         return
 
-    # sinergia con arquetipo general
+    # sinergia con arquetipo
     for tag in archetype:
         if tag in card.tags:
-            score += 3
+            add_score(card, f"archetype_{tag}", 3)
 
     # roles básicos
     if "ramp" in card.tags:
-        score += 2
+        add_score(card, "ramp_role", 2)
     if "draw" in card.tags:
-        score += 2
+        add_score(card, "draw_role", 2)
     if "removal" in card.tags:
-        score += 2
+        add_score(card, "removal_role", 2)
 
-    # ───────── SINERGIAS AVANZADAS AUTOMÁTICAS ─────────
-    BONUS_EFFECT_SCORE = 4
-
+    # comandante
+    BONUS = 20
     for effect, keywords in COMMANDER_EFFECTS.items():
         if effect in effects:
-            if any(k.lower() in card.tags for k in keywords):
-                score += BONUS_EFFECT_SCORE
-                continue
-            text_lower = card.text.lower()
-            if any(k.lower() in text_lower for k in keywords):
-                score += BONUS_EFFECT_SCORE
+            if effect.replace("_matters", "") in card.tags:
+                add_score(card, f"commander_{effect}", BONUS)
+            elif any(k in card.text.lower() for k in keywords):
+                add_score(card, f"commander_text_{effect}", BONUS)
 
     # curva
     if card.cmc <= 3:
-        score += 1
+        add_score(card, "low_cmc", 1)
 
-    card.score = score
+    # combos
+    if deck:
+        for combo in detect_dynamic_combos(deck, effects):
+            if card.name in combo["cards"]:
+                add_score(card, f"combo_{combo['type']}", combo["bonus_score"])
+
+
+
+DYNAMIC_COMBOS = {
+    # "etb_synergy": ["etb", "double_etb"],
+    # "proliferate_synergy": ["proliferate", "+1/+1"],
+    # "ramp_synergy": ["ramp", "cost_reduction_target"],
+    # "sacrifice_synergy": ["sacrifice", "etb"],
+    "lands_artifacts_ramp_synergy": ["land", "artifact", "landfall"]
+}
+
+
+def detect_dynamic_combos(deck, commander_effects):
+    combos = []
+    # Revisamos pares de cartas en el deck
+    for i, card1 in enumerate(deck):
+        for card2 in deck[i+1:]:
+            for combo_name, tags in DYNAMIC_COMBOS.items():
+                # Si alguna carta tiene un tag y la otra tiene el efecto correspondiente
+                if (card1.tags & set(tags)) and (card2.tags & set(tags)):
+                    # Registrar el combo
+                    combos.append({
+                        "cards": [card1.name, card2.name],
+                        "type": combo_name,
+                        "bonus_score": 5
+                    })
+                # También combinaciones con efectos del comandante
+                if (card1.tags & set(tags)) and (set(tags) & commander_effects):
+                    combos.append({
+                        "cards": [card1.name],
+                        "type": f"{combo_name}_commander",
+                        "bonus_score": 14
+                    })
+    return combos
 
 # ─────────────────────────────────────────────
 # CONSTRUCCIÓN DEL MAZO
 # ─────────────────────────────────────────────
 
 def build_deck(cards, commander):
-    # Solo cartas legales (incluye otras criaturas legendarias)
-    legal_cards = [
-        c for c in cards
-        if set(c.colors).issubset(set(commander.colors))
-    ]
-
+    legal_cards = [c for c in cards if set(c.colors).issubset(set(commander.colors))]
     archetype = detect_archetype(legal_cards)
     effects = detect_commander_effects(commander)
 
+    # Calcular score inicial sin combos
     for c in legal_cards:
         score_card(c, archetype, commander, effects)
-        #print(c.name)
-        #print(c.score)
 
     deck = []
 
-    role_targets = {
-        "ramp": 10,
-        "draw": 8,
-        "removal": 8,
-    }
-
+    # Rellenar roles básicos
+    role_targets = {"ramp": 10, "draw": 8, "removal": 8}
     for role, target in role_targets.items():
-        pool = sorted(
-            [c for c in legal_cards if role in c.tags],
-            key=lambda c: c.score,
-            reverse=True
-        )
+        pool = sorted([c for c in legal_cards if role in c.tags], key=lambda c: c.score, reverse=True)
         for c in pool:
             if c not in deck and len(deck) < target:
                 deck.append(c)
 
-    remaining = sorted(
-        [c for c in legal_cards if c not in deck],
-        key=lambda c: c.score,
-        reverse=True
-    )
-
+    # Agregar cartas restantes por score
+    remaining = sorted([c for c in legal_cards if c not in deck], key=lambda c: c.score, reverse=True)
     for c in remaining:
         if len(deck) < 63:
             deck.append(c)
 
+    # ───────── Optimización iterativa para combos ─────────
+    deck = optimize_deck(deck, legal_cards, archetype, commander, effects, max_size=63)
+
     return deck, archetype
+
+
+
+def optimize_deck(deck, legal_cards, archetype, commander, effects, max_size=63):
+    """
+    Optimiza un deck reemplazando cartas de menor score por otras mejores.
+    """
+    # Recalcular scores con combos dinámicos
+    for c in legal_cards:
+        score_card(c, archetype, commander, effects, deck=deck)
+
+    # Ordenar todas las cartas legales por score descendente
+    legal_sorted = sorted(legal_cards, key=lambda c: c.score, reverse=True)
+
+    # Inicializar el deck final
+    final_deck = list(deck)
+
+    # Iterar mientras haya cartas fuera del deck que sean mejores que las peores dentro
+    improved = True
+    while improved:
+        improved = False
+        # Carta con menor score dentro del deck
+        worst_in_deck = min(final_deck, key=lambda c: c.score)
+        # Carta con mayor score fuera del deck
+        for candidate in legal_sorted:
+            if candidate not in final_deck and candidate.score > worst_in_deck.score:
+                # Reemplazar
+                final_deck.remove(worst_in_deck)
+                final_deck.append(candidate)
+                improved = True
+                break  # recalcular después de un cambio
+
+        if improved:
+            # Recalcular scores porque los combos pueden cambiar
+            for c in legal_cards:
+                score_card(c, archetype, commander, effects, deck=final_deck)
+
+    # Asegurar tamaño máximo
+    return final_deck[:max_size]
 
 # ─────────────────────────────────────────────
 # TIERRAS
@@ -410,18 +522,51 @@ def main():
     ruta = "./webPage/src/decks/"
     os.makedirs(ruta, exist_ok=True)
 
-    file_path = os.path.join(ruta, f"{commander.name}.txt")
+    file_path = os.path.join(ruta, f"{commander.name}.json")
 
-    with open(file_path, 'w', encoding='utf-8') as txtfile:
-        txtfile.write(f"{commander.id}\n")
-        for c in deck:
-            txtfile.write(f"{c.id}\n")
-        for land in lands:
-            txtfile.write(f"{land}\n")
+    deck_ids = {c.id for c in deck}
 
+    output = {
+        "commander": {
+            "id": commander.id,
+            "name": commander.name,
+            "colors": commander.colors,
+            "score": commander.score,
+            "score_breakdown": getattr(commander, "score_breakdown", {}),
+            "commander_tags": list(commander.tags)
+        },
+        "deck": [],
+        "lands": lands,
+        "other_cards": []
+    }
 
-                
+    # Guardar cartas del deck
+    for c in deck:
+        output["deck"].append({
+            "id": c.id,
+            "name": c.name,
+            "score": c.score,
+            "score_breakdown": getattr(c, "score_breakdown", {}),
+            "included": True
+        })
+
+    # Guardar las demás cartas
+    for c in cards:
+        if c.id not in deck_ids:
+            output["other_cards"].append({
+                "id": c.id,
+                "name": c.name,
+                "score": c.score,
+                "score_breakdown": getattr(c, "score_breakdown", {}),
+                "included": False
+            })
+
+    # Guardar todo en JSON
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(output, f, ensure_ascii=False, indent=4)
+
                     
+                        
 
 if __name__ == "__main__":
     main()
