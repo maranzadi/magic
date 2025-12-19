@@ -533,8 +533,8 @@ def main():
         for c in deck:
             print(f"1 {c.name} - {', '.join(sorted(c.types))} - {c.score}")
 
-        for land in lands:
-            print(f"1 {land}")
+        # for land in lands:
+        #     print(f"1 {land}")
 
         print("\n✔ Mazo Commander (100 cartas) generado.")
 
