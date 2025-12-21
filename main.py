@@ -574,7 +574,7 @@ def main():
         }
 
         # Guardar cartas del deck
-        deck.sort(key=lambda c: c.score)
+        deck.sort(key=lambda c: c.score, reverse=True)
         for c in deck:
             output["deck"].append({
                 "id": c.id,
@@ -589,7 +589,7 @@ def main():
             })
 
         # Guardar las demás cartas
-        cards.sort(key=lambda c: c.score)
+        cards.sort(key=lambda c: c.score, reverse=True)
         for c in cards:
             if c.id in deck_ids:
                 continue
