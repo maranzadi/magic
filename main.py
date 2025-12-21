@@ -547,10 +547,17 @@ def main():
         print("\n✔ Mazo Commander (100 cartas) generado.")
 
         ruta = "./webPage/src/decks/"
+        mainFile="mainFile.json"
+
         os.makedirs(ruta, exist_ok=True)
+
 
         safe_name = safe_filename(commander.name)
         file_path = os.path.join(ruta, f"{safe_name}.json")
+
+        file_Main = os.path.join(ruta, f"{mainFile}.json")
+
+
 
         deck_ids = {c.id for c in deck}
 
@@ -570,6 +577,8 @@ def main():
             "other_cards": [],
             "ilegal_cards": []
         }
+
+        fileMain = output
 
         # Guardar cartas del deck
         deck.sort(key=lambda c: c.score, reverse=True)
@@ -612,6 +621,10 @@ def main():
         # Guardar todo en JSON
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(output, f, ensure_ascii=False, indent=4)
+
+        # Guardar todo en JSON
+        with open(file_Main, 'w', encoding='utf-8') as f:
+            json.dump(fileMain, f, ensure_ascii=False, indent=4)
 
                     
                         
