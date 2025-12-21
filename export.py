@@ -90,8 +90,10 @@ def card_data_from_api(data):
     image_url = None
     if "image_uris" in data:
         image_url = data["image_uris"].get("normal")
+        image_only = data["image_uris"].get("art_crop")
     elif "card_faces" in data and data["card_faces"]:
         image_url = data["card_faces"][0].get("image_uris", {}).get("normal")
+        image_only = image_url
 
     return {
         "id": data["id"],
@@ -102,7 +104,8 @@ def card_data_from_api(data):
         "types": main_types,
         "text": data.get("oracle_text") or "",
         "is_legendary": "Legendary" in type_line,
-        "image_url": image_url
+        "image_url": image_url,
+        "image_only": image_only
     }
 
 
