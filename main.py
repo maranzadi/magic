@@ -202,14 +202,10 @@ def choose_commander_manual(cards, numero):
     candidates = [c for c in cards if c.is_legendary and "Creature" in c.type_line]
     if not candidates:
         raise RuntimeError("No hay comandante legal en la colección.")
+    if 0 <= int(numero) < len(candidates):
+        return candidates[int(numero)]
+    raise ValueError("Número de comandante inválido")
 
-    # print("Elige tu comandante:")
-    # for i, c in enumerate(candidates, start=1):
-    #     print(f"{i}. {c.name} ({', '.join(c.colors) or 'Incoloro'})")
-
-    choice = numero
-    if 0 <= int(choice) <= len(candidates):
-        return candidates[int(choice)]
    
 # while True:
     #     choice = input(f"Ingrese el número (1-{len(candidates)}): ").strip()
@@ -521,13 +517,15 @@ def main():
         print(f"\rCargando {i}/{total} - {card.name} - {card.score} ({', '.join(card.colors) or 'Incoloro'})", end="")
 
     candidates = [c for c in cards if c.is_legendary and "Creature" in c.type_line]
+    print (candidates)
     if not candidates:
         raise RuntimeError("No hay comandante legal en la colección.")
 
     for i in range(len(candidates)):
         # print(i)
+        #print(candidates[i].name)
 
-        commander = choose_commander_manual(cards, i)
+        commander = candidates[i]
         deck, archetype = build_deck(cards, commander)
         lands = generate_lands(deck, commander)
 
