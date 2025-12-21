@@ -35,18 +35,20 @@ class Card:
         main_types = self.type_line.split("—")[0]  # antes del —
         self.types = set(main_types.strip().split())
 
-        self.image_url = self._get_image_url(data)
+        ambasImagenes = self._get_image_url(data)
+        self.image_url = ambasImagenes[0]
+        self.image_only = ambasImagenes[1]
 
     def _get_image_url(self, data):
         # Carta normal
         if "image_uris" in data:
-            return data["image_uris"].get("normal")
+            return [data["image_uris"].get("normal"), data["image_uris"].get("art_crop")]
 
         # Carta de doble cara
         if "card_faces" in data and data["card_faces"]:
             face = data["card_faces"][0]
             if "image_uris" in face:
-                return face["image_uris"].get("normal")
+                return [face["image_uris"].get("normal"), face["image_uris"].get("normal")]
 
         return None
 
@@ -559,11 +561,14 @@ def main():
                 "colors": commander.colors,
                 "score": commander.score,
                 "score_breakdown": getattr(commander, "score_breakdown", {}),
-                "commander_tags": list(commander.tags)
+                "commander_tags": list(commander.tags),
+                "image_url": commander.image_url,
+                "image_only": commander.image_only,
             },
             "deck": [],
             "lands": lands,
-            "other_cards": []
+            "other_cards": [],
+            "ilegal_cards": []
         }
 
         # Guardar cartas del deck
@@ -574,21 +579,33 @@ def main():
                 "score": c.score,
                 "score_breakdown": getattr(c, "score_breakdown", {}),
                 "colors": c.colors,
+                "image_url": c.image_url,
+                "image_only": c.image_only,
 
                 "included": True
             })
 
         # Guardar las demás cartas
         for c in cards:
-            if c.id not in deck_ids:
-                output["other_cards"].append({
-                    "id": c.id,
-                    "name": c.name,
-                    "score": c.score,
-                    "score_breakdown": getattr(c, "score_breakdown", {}),
-                    "colors": c.colors,
-                    "included": False
-                })
+            if c.id in deck_ids:
+                continue
+
+            card_data = {
+                "id": c.id,
+                "name": c.name,
+                "score": c.score,
+                "score_breakdown": getattr(c, "score_breakdown", {}),
+                "colors": c.colors,
+                "image_url": c.image_url,
+                "image_only": c.image_only,
+
+                "included": False
+            }
+
+            if c.score > 0:
+                output["other_cards"].append(card_data)
+            elif c.score < 0:
+                output["ilegal_cards"].append(card_data)
 
         # Guardar todo en JSON
         with open(file_path, 'w', encoding='utf-8') as f:
