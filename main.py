@@ -521,6 +521,14 @@ def main():
     if not candidates:
         raise RuntimeError("No hay comandante legal en la colección.")
 
+
+
+    ruta = "./webPage/src/decks/"
+    mainFile="mainFile"
+
+    file_Main = os.path.join(ruta, f"{mainFile}.json")
+
+    
     for i in range(len(candidates)):
         # print(i)
         #print(candidates[i].name)
@@ -546,8 +554,7 @@ def main():
 
         print("\n✔ Mazo Commander (100 cartas) generado.")
 
-        ruta = "./webPage/src/decks/"
-        mainFile="mainFile.json"
+        
 
         os.makedirs(ruta, exist_ok=True)
 
@@ -555,7 +562,6 @@ def main():
         safe_name = safe_filename(commander.name)
         file_path = os.path.join(ruta, f"{safe_name}.json")
 
-        file_Main = os.path.join(ruta, f"{mainFile}.json")
 
 
 
@@ -578,7 +584,7 @@ def main():
             "ilegal_cards": []
         }
 
-        fileMain = output
+        file_Main.append(output["commander"])
 
         # Guardar cartas del deck
         deck.sort(key=lambda c: c.score, reverse=True)
@@ -622,9 +628,10 @@ def main():
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(output, f, ensure_ascii=False, indent=4)
 
-        # Guardar todo en JSON
+        
+    # Guardar todo en JSON
         with open(file_Main, 'w', encoding='utf-8') as f:
-            json.dump(fileMain, f, ensure_ascii=False, indent=4)
+            json.dump(file_Main, f, ensure_ascii=False, indent=4)
 
                     
                         
