@@ -1,4 +1,4 @@
-let cardsDB = {}; // Para guardar los datos de cards.json
+// let cardsDB = {}; // Para guardar los datos de cards.json
 
 // Primero cargamos las cartas
 fetch("./decks/Toph_the_First_Metalbender.json")
