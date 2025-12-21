@@ -540,9 +540,8 @@ def main():
         print("MAZO:\n")
         print(f"1 {commander.name}\n")
 
-        for c in deck:
-            a =1
-            #print(f"1 {c.name} - {', '.join(sorted(c.types))} - {c.score}")
+        # for c in deck:
+        #     print(f"1 {c.name} - {', '.join(sorted(c.types))} - {c.score}")
 
         # for land in lands:
         #     print(f"1 {land}")
