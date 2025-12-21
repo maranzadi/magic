@@ -29,6 +29,7 @@ cleanup() {
 trap cleanup INT
 
 $OS_TYPE=$(uname -s)
+echo $OS_TYPE
 
 sleep 1
 if [[ "$OS_TYPE" == "darwin"* ]]; then
