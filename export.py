@@ -158,7 +158,7 @@ def main():
             print(f"\rCargada: {card.name}", end="")
 
     save_cards_db(cards_db)
-    copi()
+    # copi()
     print("\n✅ Proceso completado")
 
 
