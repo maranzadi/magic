@@ -35,9 +35,9 @@ class Card:
         main_types = self.type_line.split("—")[0]  # antes del —
         self.types = set(main_types.strip().split())
 
-        ambasImagenes = self._get_image_url(data)
-        self.image_url = ambasImagenes[0]
-        self.image_only = ambasImagenes[1]
+    
+        self.image_url = data["image_url"]
+        self.image_only = data["image_only"]
 
     def _get_image_url(self, data):
         # Carta normal
@@ -69,6 +69,8 @@ def fetch_card(card_id):
         "color_identity": data.get("colors", []),
         "type_line": data.get("type_line", ""),
         "oracle_text": data.get("text", ""),
+        "image_url": data.get("image_url"),
+        "image_only": data.get("image_only")
     }
 
 def add_score(card, reason, value):
