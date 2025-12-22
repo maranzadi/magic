@@ -64,6 +64,20 @@ function imagen(c){
     return valor
 }
 
+function commandante(c){
+    valor= `
+      <div class='bg-gray-600 p-5 rounded-md flex flex-col items-center justify-center'>
+        <img src='${c.image_url || ""}' 
+             class='h-90 rounded-lg hover:scale-110 transition delay-150 duration-300 ease-in-out'>
+        <h1 class='mt-1.5 text-center text-amber-50'>
+          ${c.name} - Score: ${c.score} ${c.included ? "(Incluida)" : "(No incluida)"}
+        </h1>
+      </div>
+    `;
+
+    return valor
+}
+
 
 //          PARA VER LAS ESTADISTICAS INTERNAS
 //          <pre class='text-white'>${JSON.stringify(c.score_breakdown, null, 2)}</pre>
