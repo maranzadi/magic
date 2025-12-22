@@ -517,7 +517,7 @@ def main():
         print(f"\rCargando {i}/{total} - {card.name} - {card.score} ({', '.join(card.colors) or 'Incoloro'})", end="")
 
     candidates = [c for c in cards if c.is_legendary and "Creature" in c.type_line]
-    print (candidates)
+    #print (candidates)
     if not candidates:
         raise RuntimeError("No hay comandante legal en la colección.")
 
@@ -535,8 +535,8 @@ def main():
         print(f"ARQUETIPO: {', '.join(archetype)}")
         print("══════════════════════════════════════\n")
 
-        print("MAZO:\n")
-        print(f"1 {commander.name}\n")
+        #print("MAZO:\n")
+        #print(f"1 {commander.name}\n")
 
         # for c in deck:
         #     print(f"1 {c.name} - {', '.join(sorted(c.types))} - {c.score}")
