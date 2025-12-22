@@ -16,7 +16,11 @@ function renderDeck(deckData) {
   const commanderNode = document.getElementById('commander');
   const conjuntoNode = document.getElementById('conjunto');
   const otrosNode = document.getElementById('noIncluidas');
+  const cartasNoIncluidad = document.getElementById('cartasNoIncluidas');
   // const ilegales = document.getElementById('ilegales');
+
+  commanderNode.classList.toggle("hidden")
+  cartasNoIncluidad.classList.toggle("hidden")
 
 
 
