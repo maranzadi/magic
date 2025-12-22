@@ -1,12 +1,15 @@
 // let cardsDB = {}; // Para guardar los datos de cards.json
 
 // Primero cargamos las cartas
-fetch("./decks/Toph_the_First_Metalbender.json")
-  .then(res => res.json())
-  .then(deckData => {
-    renderDeck(deckData);
-  })
-  .catch(e => console.error("Error cargando el JSON:", e));
+function baraja(){
+  fetch("./decks/mainFile.json")
+    .then(res => res.json())
+    .then(deckData => {
+      renderDeck(deckData);
+    })
+    .catch(e => console.error("Error cargando el JSON:", e));
+}
+
 
 
 function renderDeck(deckData) {
