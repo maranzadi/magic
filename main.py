@@ -524,9 +524,10 @@ def main():
 
 
     ruta = "./webPage/src/decks/"
-    mainFile="mainFile"
+    mainFile = "mainFile"
 
-    file_Main = os.path.join(ruta, f"{mainFile}.json")
+    file_Main_path = os.path.join(ruta, f"{mainFile}.json")
+    file_Main_data = []
 
     
     for i in range(len(candidates)):
@@ -584,7 +585,9 @@ def main():
             "ilegal_cards": []
         }
 
-        file_Main.append(output["commander"])
+        tempOutput = output["commander"]
+        tempOutput["commander"].name = safe_filename(tempOutput["commander"].name)
+        file_Main_data.append(output["commander"])
 
         # Guardar cartas del deck
         deck.sort(key=lambda c: c.score, reverse=True)
@@ -630,8 +633,8 @@ def main():
 
         
     # Guardar todo en JSON
-        with open(file_Main, 'w', encoding='utf-8') as f:
-            json.dump(file_Main, f, ensure_ascii=False, indent=4)
+        with open(file_Main_path, 'w', encoding='utf-8') as f:
+            json.dump(file_Main_data, f, ensure_ascii=False, indent=4)
 
                     
                         
