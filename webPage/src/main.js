@@ -1,8 +1,32 @@
 // let cardsDB = {}; // Para guardar los datos de cards.json
 
-// Primero cargamos las cartas
-function baraja(){
-  fetch("./decks/mainFile.json")
+
+fetch("./decks/mainFile.json")
+    .then(res => res.json())
+    .then(deckData => {
+      lista(deckData);
+    })
+    .catch(e => console.error("Error cargando el JSON:", e));
+
+
+// Lista de barajas
+function lista(bar){
+
+
+  const mazos = document.getElementById('cartasNoIncluidas');
+  mazos.classList.toggle("hidden")
+
+
+  bar
+    .forEach(c => {
+    mazos.innerHTML += commandante(c) ;
+  });
+}
+
+
+// Cargar la baraja
+function baraja(commander){
+    fetch(`./decks/${commander}.json`)
     .then(res => res.json())
     .then(deckData => {
       renderDeck(deckData);
@@ -67,10 +91,10 @@ function imagen(c){
 function commandante(c){
     valor= `
       <div class='bg-gray-600 p-5 rounded-md flex flex-col items-center justify-center'>
-        <img src='${c.image_url || ""}' 
+        <img src='${c.image_only || ""}' 
              class='h-90 rounded-lg hover:scale-110 transition delay-150 duration-300 ease-in-out'>
         <h1 class='mt-1.5 text-center text-amber-50'>
-          ${c.name} - Score: ${c.score} ${c.included ? "(Incluida)" : "(No incluida)"}
+          ${c.name}
         </h1>
       </div>
     `;
