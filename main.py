@@ -586,8 +586,9 @@ def main():
         }
 
         tempOutput = output["commander"]
-        tempOutput["commander"].name = safe_filename(tempOutput["commander"].name)
-        file_Main_data.append(tempOutput["commander"])
+        #print(tempOutput)
+        tempOutput["name"] = safe_filename(tempOutput["name"])
+        file_Main_data.append(tempOutput)
 
         # Guardar cartas del deck
         deck.sort(key=lambda c: c.score, reverse=True)
