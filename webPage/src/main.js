@@ -46,6 +46,9 @@ function renderDeck(deckData) {
   commanderNode.classList.toggle("hidden")
   cartasNoIncluidad.classList.toggle("hidden")
 
+  const mazos = document.getElementById('mazos');
+  mazos.classList.toggle("hidden")
+
 
 
   // Renderizamos el comandante
