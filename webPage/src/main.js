@@ -74,6 +74,12 @@ function renderDeck(deckData) {
   //   .forEach(c => {
   //   otrosNode.innerHTML += imagen(c) ;
   // });
+  window.scrollTo({
+  top: 0,
+  behavior: "smooth"
+});
+
+
 }
 
 
