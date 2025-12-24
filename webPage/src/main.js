@@ -19,7 +19,7 @@ function lista(bar){
 
   bar
     .forEach(c => {
-    mazos.innerHTML += commandante(c) ;
+    mazos.innerHTML += decks(c) ;
   });
 }
 
@@ -94,6 +94,21 @@ function commandante(c){
       <div class='bg-gray-600 p-5 rounded-md flex flex-col items-center justify-center'>
         <img src='${c.image_only || ""}' 
              class='h-90 rounded-lg hover:scale-110 transition delay-150 duration-300 ease-in-out'>
+        <h1 class='mt-1.5 text-center text-amber-50'>
+          ${nombre}
+        </h1>
+      </div>
+    `;
+
+    return valor
+}
+
+function decks(c){
+  nombre = c.name.replace(/_/g, " ");
+    valor= `
+      <div class='bg-gray-600 p-5 rounded-md flex flex-col items-center justify-center'>
+        <img src='${c.image_only || ""}' 
+             class='h-full w-auto rounded-lg hover:scale-110 transition delay-150 duration-300 ease-in-out'>
         <h1 class='mt-1.5 text-center text-amber-50'>
           ${nombre}
         </h1>
