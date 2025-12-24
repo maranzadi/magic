@@ -55,7 +55,7 @@ function renderDeck(deckData) {
   const commander = deckData.commander;
 
   
-  commanderNode.innerHTML = imagen(commander) ;
+  commanderNode.innerHTML = commandante(commander) ;
 
   // Renderizamos el resto del deck
     deckData.deck
@@ -95,7 +95,7 @@ function commandante(c){
   nombre = c.name.replace(/_/g, " ");
     valor= `
       <div class='bg-gray-600 p-5 rounded-md flex flex-col items-center justify-center'>
-        <img src='${c.image_only || ""}' 
+        <img src='${c.image_url || ""}' 
              class='h-90 rounded-lg hover:scale-110 transition delay-150 duration-300 ease-in-out'>
         <h1 class='mt-1.5 text-center text-amber-50'>
           ${nombre}
