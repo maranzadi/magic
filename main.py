@@ -339,10 +339,10 @@ def score_card(card, archetype, commander, effects, deck=None):
 
 
 DYNAMIC_COMBOS = {
-    # "etb_synergy": ["etb", "double_etb"],
-    # "proliferate_synergy": ["proliferate", "+1/+1"],
-    # "ramp_synergy": ["ramp", "cost_reduction_target"],
-    # "sacrifice_synergy": ["sacrifice", "etb"],
+    "etb_synergy": ["etb", "double_etb"],
+    "proliferate_synergy": ["proliferate", "+1/+1"],
+    "ramp_synergy": ["ramp", "cost_reduction_target"],
+    "sacrifice_synergy": ["sacrifice", "etb"],
     "lands_artifacts_ramp_synergy": ["land", "artifact", "landfall"]
 }
 
@@ -521,6 +521,15 @@ def main():
     if not candidates:
         raise RuntimeError("No hay comandante legal en la colección.")
 
+
+
+    ruta = "./webPage/src/decks/"
+    mainFile = "mainFile"
+
+    file_Main_path = os.path.join(ruta, f"{mainFile}.json")
+    file_Main_data = []
+
+    
     for i in range(len(candidates)):
         # print(i)
         #print(candidates[i].name)
@@ -546,11 +555,16 @@ def main():
 
         print("\n✔ Mazo Commander (100 cartas) generado.")
 
-        ruta = "./webPage/src/decks/"
+        
+
         os.makedirs(ruta, exist_ok=True)
+
 
         safe_name = safe_filename(commander.name)
         file_path = os.path.join(ruta, f"{safe_name}.json")
+
+
+
 
         deck_ids = {c.id for c in deck}
 
@@ -570,6 +584,11 @@ def main():
             "other_cards": [],
             "ilegal_cards": []
         }
+
+        tempOutput = output["commander"]
+        #print(tempOutput)
+        tempOutput["name"] = safe_filename(tempOutput["name"])
+        file_Main_data.append(tempOutput)
 
         # Guardar cartas del deck
         deck.sort(key=lambda c: c.score, reverse=True)
@@ -612,6 +631,11 @@ def main():
         # Guardar todo en JSON
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(output, f, ensure_ascii=False, indent=4)
+
+        
+    # Guardar todo en JSON
+        with open(file_Main_path, 'w', encoding='utf-8') as f:
+            json.dump(file_Main_data, f, ensure_ascii=False, indent=4)
 
                     
                         
